@@ -7,7 +7,26 @@ const axios = require('axios');
 const app = express();
 const redis = asyncRedis.createClient();
 
-const defURL = 'https://smsc.ru/sys/send.php?login=Hadevs&psw=0a9s8d7f&phones=<phones>&mes=<message>'
+const defURL = 'https://smsc.ru/sys/send.php?login=Hadevs&psw=0a9s8d7f&phones=<phones>&mes=<message>';
+
+const fetchPlaces = async (res, places = [], city = 'spb', page = 1) => {
+  const url = `https://kudago.com/public-api/v1.4/places/?lang=${'ru'}&page=${page}&page_size=100&fields=${'title,address,location,timetable,phone,description,coords,subway'}&text_format=text&location=${city}&categories=bar,bar-s-zhivoj-muzykoj,cafe,clubs,fastfood,restaurants`;
+  let updatedPlaces = [];
+  let response;
+  try {
+    response = await axios.get(url);
+    updatedPlaces = places.concat(response.data.results);
+  } catch(e) {
+    response = null;
+  }
+  if(!response.data.next) {
+    return res.json({
+      error: null,
+      data: updatedPlaces
+    });
+  }
+  await fetchPlaces(res, updatedPlaces, city, ++page);
+};
 
 app.use(cors());
 
@@ -51,6 +70,10 @@ app.post('/confirm_code', async (req, res) => {
     error: 'Wrong code sent to server',
     data: null
   });
+});
+
+app.get('/places', async (req, res) => {
+  await fetchPlaces(res);
 });
 
 app.listen(8080, () => {
