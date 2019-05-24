@@ -81,6 +81,17 @@ app.post('/confirm_code', async (req, res) => {
   });
 });
 
+app.get('/user/:id', async (req, res) => {
+  const id = req.params.id;
+  const client = new Client("psql://badlucknofun@localhost:5432/usersdb");
+  await client.connect();
+  const user = await client.query(`SELECT * FROM users WHERE phone = '${phone.replace('+','')}'`);
+  res.json({
+    error: null,
+    data: user.rows[0]
+  });
+});
+
 app.get('/places', async (req, res) => {
   await fetchPlaces(res);
 });
