@@ -85,7 +85,7 @@ app.get('/user/:id', async (req, res) => {
   const id = req.params.id;
   const client = new Client("psql://badlucknofun@localhost:5432/usersdb");
   await client.connect();
-  const user = await client.query(`SELECT * FROM users WHERE phone = '${phone.replace('+','')}'`);
+  const user = await client.query(`SELECT * FROM users WHERE id = ${Number.parseInt(id)}`);
   res.json({
     error: null,
     data: user.rows[0]
