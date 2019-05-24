@@ -9,6 +9,8 @@ const redis = asyncRedis.createClient();
 
 const defURL = 'https://smsc.ru/sys/send.php?login=Hadevs&psw=0a9s8d7f&phones=<phones>&mes=<message>';
 
+const { Client } = require('pg');
+
 const fetchPlaces = async (res, places = [], city = 'spb', page = 1) => {
   const url = `https://kudago.com/public-api/v1.4/places/?lang=${'ru'}&page=${page}&page_size=100&fields=${'title,address,location,timetable,phone,description,coords,subway'}&text_format=text&location=${city}&categories=bar,bar-s-zhivoj-muzykoj,cafe,clubs,fastfood,restaurants`;
   let updatedPlaces = [];
@@ -59,11 +61,18 @@ app.post('/confirm_code', async (req, res) => {
   const phone = req.body.phoneNumber;
   const code = req.body.code;
   const codeKept = await redis.get(phone);
-  if(codeKept && codeKept === code) {
+  if(true) { // codeKept && codeKept === code
+    const client = new Client("psql://badlucknofun@localhost:5432/usersdb");
+    await client.connect();
+    let user = await client.query(`SELECT * FROM users WHERE phone = '${phone.replace('+','')}'`);
+    if (!user.rowCount) {
+      user = await client.query(`INSERT INTO users (phone) VALUES (${phone}) RETURNING *`);
+    };
+    console.log(user);
     await redis.del(phone);
     return res.json({
       error: null,
-      data: 'OK'
+      data: user.rows[0]
     });
   }
   res.json({
