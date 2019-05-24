@@ -61,8 +61,8 @@ app.post('/confirm_code', async (req, res) => {
   const phone = req.body.phoneNumber;
   const code = req.body.code;
   const codeKept = await redis.get(phone);
-  if(true) { // codeKept && codeKept === code
-    const client = new Client("psql://badlucknofun@localhost:5432/usersdb");
+  if(codeKept && codeKept === code) {
+    const client = new Client("psql://postgres:securePassword@localhost:5432/postgres");
     await client.connect();
     let user = await client.query(`SELECT * FROM users WHERE phone = '${phone.replace('+','')}'`);
     if (!user.rowCount) {
@@ -83,7 +83,7 @@ app.post('/confirm_code', async (req, res) => {
 
 app.get('/user/:id', async (req, res) => {
   const id = req.params.id;
-  const client = new Client("psql://badlucknofun@localhost:5432/usersdb");
+  const client = new Client("psql://postgres:securePassword@localhost:5432/postgres");
   await client.connect();
   const user = await client.query(`SELECT * FROM users WHERE id = ${Number.parseInt(id)}`);
   res.json({
