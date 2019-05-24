@@ -68,7 +68,6 @@ app.post('/confirm_code', async (req, res) => {
     if (!user.rowCount) {
       user = await client.query(`INSERT INTO users (phone) VALUES (${phone}) RETURNING *`);
     };
-    console.log(user);
     await redis.del(phone);
     return res.json({
       error: null,
