@@ -61,7 +61,7 @@ app.post('/confirm_code', async (req, res) => {
   const phone = req.body.phoneNumber;
   const code = req.body.code;
   const codeKept = await redis.get(phone);
-  if(true) { // codeKept && codeKept === code
+  if(codeKept && codeKept === code) {
     const client = new Client("psql://badlucknofun@localhost:5432/usersdb");
     await client.connect();
     let user = await client.query(`SELECT * FROM users WHERE phone = '${phone.replace('+','')}'`);
@@ -93,6 +93,32 @@ app.get('/user/:id', async (req, res) => {
 
 app.get('/places', async (req, res) => {
   await fetchPlaces(res);
+});
+
+app.post('/update_user_info', async (req, res) => {
+  const data = req.body;
+  const id = data.id;
+  const client = new Client("psql://badlucknofun@localhost:5432/usersdb");
+  await client.connect();
+  const user = await client.query(`SELECT * FROM users WHERE id = ${Number.parseInt(id)}`);
+  if (user.rowCount) {
+    var update_query_array = [];
+    for (var key in data.fields) {
+      if (!(key=='id') && !(key=='avatar')) {
+      update_query_array.push(`${key} = '${data.fields[key]}'`);
+      }
+    }
+    console.log(update_query_array.join(', '));
+    const updated_users = await client.query(`UPDATE users SET ${update_query_array.join(',')} WHERE id = ${Number.parseInt(id)} RETURNING *;`);
+    return res.json({
+    error: null,
+    data: updated_users.rows[0]
+  });
+  }
+  res.json({
+    error: 'Ошибка обновления данных пользователя',
+    data: null
+  })
 });
 
 // moving to dev branch
