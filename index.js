@@ -102,13 +102,12 @@ app.post('/update_user_info', async (req, res) => {
   await client.connect();
   const user = await client.query(`SELECT * FROM users WHERE id = ${Number.parseInt(id)}`);
   if (user.rowCount) {
-    var update_query_array = [];
-    for (var key in data.fields) {
+    let update_query_array = [];
+    for (let key in data.fields) {
       if (!(key=='id') && !(key=='avatar')) {
       update_query_array.push(`${key} = '${data.fields[key]}'`);
       }
     }
-    console.log(update_query_array.join(', '));
     const updated_users = await client.query(`UPDATE users SET ${update_query_array.join(',')} WHERE id = ${Number.parseInt(id)} RETURNING *;`);
     return res.json({
     error: null,
