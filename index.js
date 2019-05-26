@@ -3,9 +3,11 @@ const cors = require('cors');
 const bodyparser = require('body-parser');
 const asyncRedis = require("async-redis");
 const axios = require('axios');
-
+const fs = require('fs');
 const app = express();
 const redis = asyncRedis.createClient();
+const multer = require('multer');
+const upload = multer();
 
 const defURL = 'https://smsc.ru/sys/send.php?login=Hadevs&psw=0a9s8d7f&phones=<phones>&mes=<message>';
 
@@ -34,6 +36,7 @@ app.use(cors());
 
 app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({ extended: true }));
+//app.use(express.static('public')); // nu a vdrug
 
 app.post('/send_code', async (req, res) => {
   const phone = req.body.phoneNumber;
@@ -117,6 +120,22 @@ app.post('/update_user_info', async (req, res) => {
   res.json({
     error: 'Ошибка обновления данных пользователя',
     data: null
+  })
+});
+
+app.post('/update_avatar', upload.single('image'), async (req, res, next) => {
+  const id = req.body.id;
+  const image = req.file.buffer;
+  const imagepath = `images/avatars/id_${id}.png`;
+  fs.writeFile(imagepath, image, (err) => {
+    if (err) throw err;
+  });
+  const client = new Client("psql://badlucknofun@localhost:5432/usersdb");
+  await client.connect();
+  const updated_users = await client.query(`UPDATE users SET avatar = '${imagepath}' WHERE id = ${Number.parseInt(id)} RETURNING *;`);
+  res.json({
+    error: null,
+    data: updated_users.rows[0]
   })
 });
 
