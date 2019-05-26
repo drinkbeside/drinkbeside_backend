@@ -36,7 +36,7 @@ app.use(cors());
 
 app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({ extended: true }));
-//app.use(express.static('public')); // nu a vdrug
+app.use(express.static('public')); // nu a vdrug
 
 app.post('/send_code', async (req, res) => {
   const phone = req.body.phoneNumber;
@@ -127,7 +127,7 @@ app.post('/update_avatar', upload.single('image'), async (req, res, next) => {
   const id = req.body.id;
   const image = req.file.buffer;
   const imagepath = `images/avatars/id_${id}.png`;
-  fs.writeFile(imagepath, image, (err) => {
+  fs.writeFile('public/'+imagepath, image, (err) => {
     if (err) throw err;
   });
   const client = new Client("psql://badlucknofun@localhost:5432/usersdb");
