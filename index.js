@@ -8,8 +8,10 @@ const app = express();
 const redis = asyncRedis.createClient();
 const multer = require('multer');
 const upload = multer();
+// to keep consts away from file
+require('dotenv').config();
 
-const defURL = 'https://smsc.ru/sys/send.php?login=Hadevs&psw=0a9s8d7f&phones=<phones>&mes=<message>';
+const defURL = process.env.DEF_URL;
 
 const { Client } = require('pg');
 
@@ -65,7 +67,7 @@ app.post('/confirm_code', async (req, res) => {
   const code = req.body.code;
   const codeKept = await redis.get(phone);
   if(codeKept && codeKept === code) {
-    const client = new Client("psql://badlucknofun@localhost:5432/usersdb");
+    const client = new Client(process.env.DB_URL);
     await client.connect();
     let user = await client.query(`SELECT * FROM users WHERE phone = '${phone.replace('+','')}'`);
     if (!user.rowCount) {
@@ -85,7 +87,7 @@ app.post('/confirm_code', async (req, res) => {
 
 app.get('/user/:id', async (req, res) => {
   const id = req.params.id;
-  const client = new Client("psql://badlucknofun@localhost:5432/usersdb");
+  const client = new Client(process.env.DB_URL);
   await client.connect();
   const user = await client.query(`SELECT * FROM users WHERE id = ${Number.parseInt(id)}`);
   res.json({
@@ -101,7 +103,7 @@ app.get('/places', async (req, res) => {
 app.post('/update_user_info', async (req, res) => {
   const data = req.body;
   const id = data.id;
-  const client = new Client("psql://badlucknofun@localhost:5432/usersdb");
+  const client = new Client(process.env.DB_URL);
   await client.connect();
   const user = await client.query(`SELECT * FROM users WHERE id = ${Number.parseInt(id)}`);
   if (user.rowCount) {
@@ -130,7 +132,7 @@ app.post('/update_avatar', upload.single('image'), async (req, res, next) => {
   fs.writeFile('public/'+imagepath, image, (err) => {
     if (err) throw err;
   });
-  const client = new Client("psql://badlucknofun@localhost:5432/usersdb");
+  const client = new Client(process.env.DB_URL);
   await client.connect();
   const updated_users = await client.query(`UPDATE users SET avatar = '${imagepath}' WHERE id = ${Number.parseInt(id)} RETURNING *;`);
   res.json({
@@ -140,6 +142,6 @@ app.post('/update_avatar', upload.single('image'), async (req, res, next) => {
 });
 
 // moving to dev branch
-app.listen(8080, () => {
-  console.log('UP & RUNNING');
+app.listen(process.env.PORT, () => {
+  console.log(`UP & RUNNING ON ${process.env.PORT}`);
 });
