@@ -4,7 +4,7 @@ const redis = asyncRedis.createClient();
 
 const fetchPlaces = async (res, city = 'spb', places = [], page = 1, lang = 'ru') => {
   // checking cache
-  let cachedPlaces = await redis.get('spb');
+  let cachedPlaces = await redis.get(city);
   if(cachedPlaces) return res.json({
     error: null,
     data: JSON.parse(cachedPlaces)
@@ -20,9 +20,9 @@ const fetchPlaces = async (res, city = 'spb', places = [], page = 1, lang = 'ru'
     response = null;
   }
   if(!response.data.next) {
-    redis.set('spb', JSON.stringify(updatedPlaces));
+    redis.set(city, JSON.stringify(updatedPlaces));
     setTimeout(() => {
-      redis.del('spb');
+      redis.del(city);
     }, process.env.CACHE_TIMEOUT);
     return res.json({
       error: null,
