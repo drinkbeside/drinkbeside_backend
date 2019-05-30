@@ -17,6 +17,7 @@ const upload = multer();
 const {
   userByID,
   userByPhone,
+  saveUser,
   updateUserInfo,
   updateAvatar
 } = require('./database/postgres');
