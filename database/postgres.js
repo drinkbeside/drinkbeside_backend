@@ -12,7 +12,7 @@ pool.on('error', (err) => {
   process.exit(-1)
 });
 
-exports.userByPhone = async (phone = null) => {
+module.exports.userByPhone = async (phone = null) => {
   if(!phone) return null;
   return await pool.connect(async (err, client, done) => {
     if(err) throw err;
@@ -24,7 +24,7 @@ exports.userByPhone = async (phone = null) => {
   });
 };
 
-exports.userByID = async (id = null) => {
+module.exports.userByID = async (id = null) => {
   if(!id) return null;
   return await pool.connect(async (err, client, done) => {
     if(err) return null;
@@ -36,7 +36,7 @@ exports.userByID = async (id = null) => {
   });
 };
 
-exports.saveUser = async (phone = null) => {
+module.exports.saveUser = async (phone = null) => {
   if(!phone) return null;
   return await pool.connect(async (err, client, done) => {
     if(err) return null;
@@ -48,7 +48,7 @@ exports.saveUser = async (phone = null) => {
   });
 };
 
-exports.updateUserInfo = async (id = null, fields = null) => {
+module.exports.updateUserInfo = async (id = null, fields = null) => {
   if(!id || !fields) return null;
   return await pool.connect(async (err, client, done) => {
     if(err) throw err;
@@ -60,7 +60,7 @@ exports.updateUserInfo = async (id = null, fields = null) => {
   });
 };
 
-exports.updateAvatar = async (id = null, path = null) => {
+module.exports.updateAvatar = async (id = null, path = null) => {
   if(!id || !path) return null;
   return await pool.connect(async (err, client, done) => {
     if(err) throw err;
