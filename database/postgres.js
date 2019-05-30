@@ -37,6 +37,7 @@ module.exports.userByID = (id = null) => {
         return resolve(result.rows[0]);
       });
     });
+  });
 };
 
 module.exports.saveUser = (phone = null) => {
