@@ -16,7 +16,7 @@ module.exports.userByPhone = async (phone = null) => {
   if(!phone) return null;
   return await pool.connect(async (err, client, done) => {
     if(err) throw err;
-    return await client.query(`SELECT * FROM users WHERE phone=${phone}`, (err, result) => {
+    return await client.query(`SELECT * FROM users WHERE phone='${phone}'`, (err, result) => {
       done();
       if(err) return null;
       return result.rows[0];
@@ -43,6 +43,7 @@ module.exports.saveUser = async (phone = null) => {
     return await client.query(`INSERT INTO users(phone) VALUES('${phone}') RETURNING *`, (err, result) => {
       done();
       if(err) return null;
+      console.log(result);
       return result.rows[0];
     });
   });
