@@ -1,15 +1,17 @@
+// to keep consts away from file
+require('dotenv').config();
+// libraries
 const express = require('express');
 const cors = require('cors');
 const bodyparser = require('body-parser');
 const asyncRedis = require("async-redis");
 const axios = require('axios');
 const fs = require('fs');
+const multer = require('multer');
+// system consts
 const app = express();
 const redis = asyncRedis.createClient();
-const multer = require('multer');
 const upload = multer();
-// to keep consts away from file
-require('dotenv').config();
 // custom functions
 const {
   userByID,
