@@ -10,35 +10,20 @@ const multer = require('multer');
 const upload = multer();
 // to keep consts away from file
 require('dotenv').config();
-
-const defURL = process.env.DEF_URL;
-
-const { Client } = require('pg');
-
-const fetchPlaces = async (res, places = [], city = 'spb', page = 1) => {
-  const url = `https://kudago.com/public-api/v1.4/places/?lang=${'ru'}&page=${page}&page_size=100&fields=${'title,address,location,timetable,phone,description,coords,subway'}&text_format=text&location=${city}&categories=bar,bar-s-zhivoj-muzykoj,cafe,clubs,fastfood,restaurants`;
-  let updatedPlaces = [];
-  let response;
-  try {
-    response = await axios.get(url);
-    updatedPlaces = places.concat(response.data.results);
-  } catch(e) {
-    response = null;
-  }
-  if(!response.data.next) {
-    return res.json({
-      error: null,
-      data: updatedPlaces
-    });
-  }
-  await fetchPlaces(res, updatedPlaces, city, ++page);
-};
+// custom functions
+const {
+  userByID,
+  userByPhone,
+  updateUserInfo,
+  updateAvatar
+} = require('./database/postgres');
+const { fetchPlaces } = require('./middleware/places');
 
 app.use(cors());
 
 app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({ extended: true }));
-app.use(express.static('public')); // nu a vdrug
+app.use(express.static('public'));
 
 app.post('/send_code', async (req, res) => {
   const phone = req.body.phoneNumber;
@@ -47,7 +32,9 @@ app.post('/send_code', async (req, res) => {
   setTimeout(() => {
     redis.del(phone);
   }, 1000 * 60 * 3);
-  const toSend = defURL.replace('<phones>', phone).replace('<message>', random);
+  const toSend = process.env.DEF_URL
+    .replace('<phones>', phone)
+    .replace('<message>', random);
   try {
     const response = await axios.get(toSend);
     res.json({
@@ -67,17 +54,17 @@ app.post('/confirm_code', async (req, res) => {
   const code = req.body.code;
   const codeKept = await redis.get(phone);
   if(codeKept && codeKept === code) {
-    const client = new Client(process.env.DB_URL);
-    await client.connect();
-    let user = await client.query(`SELECT * FROM users WHERE phone = '${phone.replace('+','')}'`);
-    if (!user.rowCount) {
-      user = await client.query(`INSERT INTO users (phone) VALUES (${phone}) RETURNING *`);
+    let user = await userByPhone(phone.replace('+',''));
+    if(!user) {
+      user = await saveUser(phone);
     };
-    await redis.del(phone);
-    return res.json({
-      error: null,
-      data: user.rows[0]
-    });
+    if(user) {
+      await redis.del(phone);
+      return res.json({
+        error: null,
+        data: user
+      });
+    }
   }
   res.json({
     error: 'Wrong code sent to server',
@@ -86,13 +73,15 @@ app.post('/confirm_code', async (req, res) => {
 });
 
 app.get('/user/:id', async (req, res) => {
-  const id = req.params.id;
-  const client = new Client(process.env.DB_URL);
-  await client.connect();
-  const user = await client.query(`SELECT * FROM users WHERE id = ${Number.parseInt(id)}`);
+  const id = Number.parseInt(req.params.id);
+  const user = await userByID(id);
+  if(!user) return res.json({
+    error: `Невозможно найти пользователя с ID ${id}`,
+    data: null
+  })
   res.json({
     error: null,
-    data: user.rows[0]
+    data: user
   });
 });
 
@@ -102,46 +91,48 @@ app.get('/places', async (req, res) => {
 
 app.post('/update_user_info', async (req, res) => {
   const data = req.body;
-  const id = data.id;
-  const client = new Client(process.env.DB_URL);
-  await client.connect();
-  const user = await client.query(`SELECT * FROM users WHERE id = ${Number.parseInt(id)}`);
-  if (user.rowCount) {
-    let update_query_array = [];
-    for (let key in data.fields) {
-      if (!(key=='id') && !(key=='avatar')) {
-      update_query_array.push(`${key} = '${data.fields[key]}'`);
-      }
-    }
-    const updated_users = await client.query(`UPDATE users SET ${update_query_array.join(',')} WHERE id = ${Number.parseInt(id)} RETURNING *;`);
-    return res.json({
-    error: null,
-    data: updated_users.rows[0]
-  });
+  const id = Number.parseInt(data.id);
+  const user = await userByID(id);
+  if(user) {
+    const updateQueryArray = data.fields
+      .filter(key => key !== 'id' && key !== 'avatar')
+      .map(key => `${key} = '${data.fields[key]}'`)
+      .join(',');
+    const updatedUser = await updateUserInfo(id, updateQueryArray);
+    if(updatedUser) return res.json({
+      error: null,
+      data: updatedUser
+    });
   }
   res.json({
     error: 'Ошибка обновления данных пользователя',
     data: null
-  })
+  });
 });
 
 app.post('/update_avatar', upload.single('image'), async (req, res, next) => {
-  const id = req.body.id;
+  const id = Number.parseInt(req.body.id);
   const image = req.file.buffer;
-  const imagepath = `images/avatars/id_${id}.png`;
-  fs.writeFile('public/'+imagepath, image, (err) => {
-    if (err) throw err;
-  });
-  const client = new Client(process.env.DB_URL);
-  await client.connect();
-  const updated_users = await client.query(`UPDATE users SET avatar = '${imagepath}' WHERE id = ${Number.parseInt(id)} RETURNING *;`);
-  res.json({
+  const path = `images/avatars/id_${id}.png`;
+  try {
+    fs.writeFileSync('public/'+imagepath, image);
+  } catch(e) {
+    return res.json({
+      error: 'Ошибка сохранения аватара, попробуйте заново',
+      data: null
+    });
+  }
+  const updatedUser = await updateAvatar(id, path);
+  if(updatedUser) return res.json({
     error: null,
-    data: updated_users.rows[0]
-  })
+    data: updatedUser
+  });
+  res.json({
+    error: 'Ошибка загрузки, попробуйте заново',
+    data: null
+  });
 });
 
-// moving to dev branch
 app.listen(process.env.PORT, () => {
   console.log(`UP & RUNNING ON ${process.env.PORT}`);
 });
