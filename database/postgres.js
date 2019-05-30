@@ -13,61 +13,70 @@ pool.on('error', (err) => {
 });
 
 module.exports.userByPhone = (phone = null) => {
-  if(!phone) return null;
-  return pool.connect((err, client, done) => {
-    if(err) throw err;
-    return client.query(`SELECT * FROM users WHERE phone='${phone}'`, (err, result) => {
-      done();
-      if(err) return null;
-      return result.rows[0];
+  return new Promise(resolve => {
+    if(!phone) resolve(null);
+    pool.connect((err, client, done) => {
+      if(err) resolve(null);
+      client.query(`SELECT * FROM users WHERE phone='${phone}'`, (err, result) => {
+        done();
+        if(err) resolve(null);
+        resolve(result.rows[0]);
+      });
     });
   });
 };
 
 module.exports.userByID = (id = null) => {
-  if(!id) return null;
-  return pool.connect((err, client, done) => {
-    if(err) return null;
-    return client.query(`SELECT * FROM users WHERE id=${id}`, (err, result) => {
-      done();
-      if(err) return null;
-      return result.rows[0];
+  return new Promise(resolve => {
+    if(!id) resolve(null);
+    pool.connect((err, client, done) => {
+      if(err) resolve(null);
+      client.query(`SELECT * FROM users WHERE id=${id}`, (err, result) => {
+        done();
+        if(err) resolve(null);
+        return resolve(result.rows[0]);
+      });
     });
-  });
 };
 
 module.exports.saveUser = (phone = null) => {
-  if(!phone) return null;
-  return pool.connect((err, client, done) => {
-    if(err) return null;
-    return client.query(`INSERT INTO users(phone) VALUES('${phone}') RETURNING *`, (err, result) => {
-      done();
-      if(err) return null;
-      return result.rows[0];
+  return new Promise(resolve => {
+    if(!phone) resolve(null);
+    return pool.connect((err, client, done) => {
+      if(err) resolve(null);
+      return client.query(`INSERT INTO users(phone) VALUES('${phone}') RETURNING *`, (err, result) => {
+        done();
+        if(err) resolve(null);
+        return resolve(result.rows[0]);
+      });
     });
   });
 };
 
 module.exports.updateUserInfo = (id = null, fields = null) => {
-  if(!id || !fields) return null;
-  return pool.connect((err, client, done) => {
-    if(err) throw err;
-    return client.query(`UPDATE users SET ${fields} WHERE id = ${id} RETURNING *`, (err, result) => {
-      done();
-      if(err) return null;
-      return resul.rows[0];
+  return new Promise(resolve => {
+    if(!id || !fields) resolve(null);
+    return pool.connect((err, client, done) => {
+      if(err) resolve(null);
+      return client.query(`UPDATE users SET ${fields} WHERE id = ${id} RETURNING *`, (err, result) => {
+        done();
+        if(err) resolve(null);
+        return resolve(resul.rows[0]);
+      });
     });
   });
 };
 
 module.exports.updateAvatar = (id = null, path = null) => {
-  if(!id || !path) return null;
-  return pool.connect((err, client, done) => {
-    if(err) throw err;
-    return client.query(`UPDATE users SET avatar = '${path}' WHERE id = ${id} RETURNING *`, (err, result) => {
-      done();
-      if(err) return null;
-      return result.rows[0];
+  return new Promise(resolve => {
+    if(!id || !path) resolve(null);
+    pool.connect((err, client, done) => {
+      if(err) resolve(null);
+      client.query(`UPDATE users SET avatar = '${path}' WHERE id = ${id} RETURNING *`, (err, result) => {
+        done();
+        if(err) resolve(null);
+        return resolve(result.rows[0]);
+      });
     });
   });
 };
