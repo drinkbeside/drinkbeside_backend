@@ -12,11 +12,11 @@ pool.on('error', (err) => {
   process.exit(-1)
 });
 
-module.exports.userByPhone = async (phone = null) => {
+module.exports.userByPhone = (phone = null) => {
   if(!phone) return null;
-  return await pool.connect(async (err, client, done) => {
+  return pool.connect((err, client, done) => {
     if(err) throw err;
-    return await client.query(`SELECT * FROM users WHERE phone='${phone}'`, (err, result) => {
+    return client.query(`SELECT * FROM users WHERE phone='${phone}'`, (err, result) => {
       done();
       if(err) return null;
       return result.rows[0];
@@ -24,11 +24,11 @@ module.exports.userByPhone = async (phone = null) => {
   });
 };
 
-module.exports.userByID = async (id = null) => {
+module.exports.userByID = (id = null) => {
   if(!id) return null;
-  return await pool.connect(async (err, client, done) => {
+  return pool.connect((err, client, done) => {
     if(err) return null;
-    return await client.query(`SELECT * FROM users WHERE id=${id}`, (err, result) => {
+    return client.query(`SELECT * FROM users WHERE id=${id}`, (err, result) => {
       done();
       if(err) return null;
       return result.rows[0];
@@ -36,24 +36,23 @@ module.exports.userByID = async (id = null) => {
   });
 };
 
-module.exports.saveUser = async (phone = null) => {
+module.exports.saveUser = (phone = null) => {
   if(!phone) return null;
-  return await pool.connect(async (err, client, done) => {
+  return pool.connect((err, client, done) => {
     if(err) return null;
-    return await client.query(`INSERT INTO users(phone) VALUES('${phone}') RETURNING *`, (err, result) => {
+    return client.query(`INSERT INTO users(phone) VALUES('${phone}') RETURNING *`, (err, result) => {
       done();
       if(err) return null;
-      console.log(result);
       return result.rows[0];
     });
   });
 };
 
-module.exports.updateUserInfo = async (id = null, fields = null) => {
+module.exports.updateUserInfo = (id = null, fields = null) => {
   if(!id || !fields) return null;
-  return await pool.connect(async (err, client, done) => {
+  return pool.connect((err, client, done) => {
     if(err) throw err;
-    return await client.query(`UPDATE users SET ${fields} WHERE id = ${id} RETURNING *`, (err, result) => {
+    return client.query(`UPDATE users SET ${fields} WHERE id = ${id} RETURNING *`, (err, result) => {
       done();
       if(err) return null;
       return resul.rows[0];
@@ -61,11 +60,11 @@ module.exports.updateUserInfo = async (id = null, fields = null) => {
   });
 };
 
-module.exports.updateAvatar = async (id = null, path = null) => {
+module.exports.updateAvatar = (id = null, path = null) => {
   if(!id || !path) return null;
-  return await pool.connect(async (err, client, done) => {
+  return pool.connect((err, client, done) => {
     if(err) throw err;
-    return await client.query(`UPDATE users SET avatar = '${path}' WHERE id = ${id} RETURNING *`, (err, result) => {
+    return client.query(`UPDATE users SET avatar = '${path}' WHERE id = ${id} RETURNING *`, (err, result) => {
       done();
       if(err) return null;
       return result.rows[0];
