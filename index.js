@@ -8,6 +8,7 @@ const asyncRedis = require("async-redis");
 const axios = require('axios');
 const fs = require('fs');
 const multer = require('multer');
+const jwt = require('jsonwebtoken');
 // system consts
 const app = express();
 const redis = asyncRedis.createClient();
@@ -26,6 +27,17 @@ app.use(cors());
 app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({ extended: true }));
 app.use(express.static('public'));
+
+const authorize = async (req, res, next) => {
+  const id = req.params.id;
+  const token = req.params.token;
+  const savedToken = await redis.get(id);
+  if(token === savedToken && jwt.verify(token)) return next();
+  return res.json({
+    error: 'Ошибка доступа по токену, вы должны быть авторизованы',
+    data: null
+  });
+};
 
 app.post('/send_code', async (req, res) => {
   const phone = req.body.phoneNumber;
@@ -62,9 +74,14 @@ app.post('/confirm_code', async (req, res) => {
     };
     if(user) {
       await redis.del(phone);
+      const token = jwt.sign({ user }, process.env.SECRET);
+      await redis.set(user.id, token);
       return res.json({
         error: null,
-        data: user
+        data: {
+          ...user,
+          token: token
+        }
       });
     }
   }
@@ -91,7 +108,7 @@ app.get('/places', async (req, res) => {
   await fetchPlaces(res);
 });
 
-app.post('/update_user_info', async (req, res) => {
+app.post('/update_user_info', authorize, async (req, res) => {
   const data = req.body;
   const id = Number.parseInt(data.id);
   const user = await userByID(id);
@@ -112,7 +129,7 @@ app.post('/update_user_info', async (req, res) => {
   });
 });
 
-app.post('/update_avatar', upload.single('image'), async (req, res, next) => {
+app.post('/update_avatar', authorize, upload.single('image'), async (req, res, next) => {
   const id = Number.parseInt(req.body.id);
   const image = req.file.buffer;
   const path = `images/avatars/id_${id}.png`;
