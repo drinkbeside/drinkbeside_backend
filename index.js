@@ -104,7 +104,7 @@ app.get('/user/:id', async (req, res) => {
   });
 });
 
-app.post('/places/:city', authorize, async (req, res) => {
+app.post('/places', authorize, async (req, res) => {
   await fetchPlaces(res, req.body.city);
 });
 
