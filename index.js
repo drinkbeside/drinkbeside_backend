@@ -69,7 +69,7 @@ app.post('/confirm_code', async (req, res) => {
   const phone = req.body.phoneNumber;
   const code = req.body.code;
   const codeKept = await redis.get(phone);
-  if(true) {// if(codeKept && codeKept === code) {
+  if(codeKept && codeKept === code) {
     let user = await userByPhone(phone.replace('+',''));
     if(!user) {
       user = await saveUser(phone);
