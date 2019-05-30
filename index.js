@@ -74,6 +74,7 @@ app.post('/confirm_code', async (req, res) => {
     if(!user) {
       user = await saveUser(phone);
     };
+    console.log(user);
     if(user) {
       await redis.del(phone);
       const token = jwt.sign({ user }, process.env.SECRET);

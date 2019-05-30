@@ -40,7 +40,7 @@ module.exports.saveUser = async (phone = null) => {
   if(!phone) return null;
   return await pool.connect(async (err, client, done) => {
     if(err) return null;
-    return await client.query(`INSERT INTO users(phone) VALUES(${phone}) RETURNING *`, (err, result) => {
+    return await client.query(`INSERT INTO users(phone) VALUES('${phone}') RETURNING *`, (err, result) => {
       done();
       if(err) return null;
       return result.rows[0];
