@@ -29,8 +29,8 @@ app.use(bodyparser.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 const authorize = async (req, res, next) => {
-  const id = req.params.id;
-  const token = req.params.token;
+  const id = req.body.id;
+  const token = req.body.token;
   const savedToken = await redis.get(id);
   if(token === savedToken && jwt.verify(token)) return next();
   return res.json({
@@ -104,8 +104,8 @@ app.get('/user/:id', async (req, res) => {
   });
 });
 
-app.get('/places', async (req, res) => {
-  await fetchPlaces(res);
+app.post('/places/:city', authorize, async (req, res) => {
+  await fetchPlaces(res, req.body.city);
 });
 
 app.post('/update_user_info', authorize, async (req, res) => {

@@ -2,7 +2,7 @@ const axios = require('axios');
 const asyncRedis = require("async-redis");
 const redis = asyncRedis.createClient();
 
-const fetchPlaces = async (res, places = [], city = 'spb', page = 1, lang = 'ru') => {
+const fetchPlaces = async (res, city = 'spb', places = [], page = 1, lang = 'ru') => {
   // checking cache
   let cachedPlaces = await redis.get('spb');
   if(cachedPlaces) return res.json({
