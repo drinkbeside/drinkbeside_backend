@@ -46,7 +46,7 @@ app.post('/send_code', async (req, res) => {
   await redis.set(phone, random);
   setTimeout(() => {
     redis.del(phone);
-  }, 1000 * 60 * 3);
+  }, process.env.SMS_TIMEOUT);
   const toSend = process.env.DEF_URL
     .replace('<phones>', phone)
     .replace('<message>', random);

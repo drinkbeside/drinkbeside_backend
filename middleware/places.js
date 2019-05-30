@@ -17,7 +17,11 @@ const fetchPlaces = async (res, city = 'spb', places = [], page = 1, lang = 'ru'
     response = await axios.get(url);
     updatedPlaces = places.concat(response.data.results);
   } catch(e) {
-    response = null;
+    response = {
+      data: {
+        next: null
+      }
+    };
   }
   if(!response.data.next) {
     redis.set(city, JSON.stringify(updatedPlaces));
@@ -29,7 +33,7 @@ const fetchPlaces = async (res, city = 'spb', places = [], page = 1, lang = 'ru'
       data: updatedPlaces
     });
   }
-  await fetchPlaces(res, updatedPlaces, city, ++page);
+  await fetchPlaces(res, city, updatedPlaces, ++page, lang);
 };
 
 module.exports.fetchPlaces = fetchPlaces;
