@@ -30,7 +30,6 @@ app.use(bodyparser.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 const authorize = async (req, res, next) => {
-  return next();
   const id = req.body.id;
   const token = req.body.token;
   const savedToken = await redis.get(id);
