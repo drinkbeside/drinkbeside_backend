@@ -22,23 +22,12 @@ const {
   updateAvatar
 } = require('./database/postgres');
 const { fetchPlaces } = require('./middleware/places');
-
+const { authorize } = require('./middleware/auth');
+// express application configuration
 app.use(cors());
-
 app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({ extended: true }));
 app.use(express.static('public'));
-
-const authorize = async (req, res, next) => {
-  const id = req.headers.id;
-  const token = req.headers.token;
-  const savedToken = await redis.get(id);
-  if(token === savedToken && jwt.verify(token)) return next();
-  return res.json({
-    error: 'Ошибка доступа по токену, вы должны быть авторизованы',
-    data: null
-  });
-};
 
 app.post('/send_code', async (req, res) => {
   const phone = req.body.phoneNumber;
@@ -58,7 +47,7 @@ app.post('/send_code', async (req, res) => {
     });
   } catch(e) {
     res.json({
-      error: 'Error sending code',
+      error: 'Ошибка отправки проверочного кода',
       data: null
     });
   }
@@ -87,7 +76,7 @@ app.post('/confirm_code', async (req, res) => {
     }
   }
   res.json({
-    error: 'Wrong code sent to server',
+    error: 'Вы прислали неверный код',
     data: null
   });
 });
@@ -98,7 +87,7 @@ app.get('/user/:id', async (req, res) => {
   if(!user) return res.json({
     error: `Невозможно найти пользователя с ID ${id}`,
     data: null
-  })
+  });
   res.json({
     error: null,
     data: {
@@ -138,7 +127,7 @@ app.post('/update_avatar', authorize, upload.single('image'), async (req, res, n
   const image = req.file.buffer;
   const path = `images/avatars/id_${id}.png`;
   try {
-    fs.writeFileSync('public/'+imagepath, image);
+    fs.writeFileSync(`public/${path}`, image);
   } catch(e) {
     return res.json({
       error: 'Ошибка сохранения аватара, попробуйте заново',
