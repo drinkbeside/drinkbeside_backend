@@ -102,7 +102,10 @@ app.get('/user/:id', async (req, res) => {
   })
   res.json({
     error: null,
-    data: user
+    data: {
+      ...user,
+      token: await redis.get(user.id)
+    }
   });
 });
 
