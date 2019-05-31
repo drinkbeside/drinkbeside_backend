@@ -30,8 +30,8 @@ app.use(bodyparser.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 const authorize = async (req, res, next) => {
-  const id = req.body.id;
-  const token = req.body.token;
+  const id = req.headers.id;
+  const token = req.headers.token;
   const savedToken = await redis.get(id);
   if(token === savedToken && jwt.verify(token)) return next();
   return res.json({
@@ -43,9 +43,9 @@ const authorize = async (req, res, next) => {
 app.post('/send_code', async (req, res) => {
   const phone = req.body.phoneNumber;
   const random = Math.floor(100000 + Math.random() * 900000);
-  await redis.set(phone, random);
+  await redis.set(phone.replace('+',''), random);
   setTimeout(() => {
-    redis.del(phone);
+    redis.del(phone.replace('+',''));
   }, process.env.SMS_TIMEOUT);
   const toSend = process.env.DEF_URL
     .replace('<phones>', phone)
@@ -65,11 +65,11 @@ app.post('/send_code', async (req, res) => {
 });
 
 app.post('/confirm_code', async (req, res) => {
-  const phone = req.body.phoneNumber;
+  const phone = req.body.phoneNumber.replace('+','');
   const code = req.body.code;
   const codeKept = await redis.get(phone);
   if(codeKept && codeKept === code) {
-    let user = await userByPhone(phone.replace('+',''));
+    let user = await userByPhone(phone);
     if(!user) {
       user = await saveUser(phone);
     };
