@@ -1,6 +1,7 @@
 // to keep consts away from file
 require('dotenv').config();
 // libraries
+const fusejs = require('fuse.js')
 const express = require('express');
 const cors = require('cors');
 const bodyparser = require('body-parser');
@@ -145,6 +146,39 @@ app.post('/update_avatar', authorize, upload.single('image'), async (req, res, n
   });
 });
 
-app.listen(process.env.PORT, () => {
+app.post('/search', async(req, res) => {
+  const query = req.body.query;
+  const city = req.body.city;
+  console.log(query);
+  console.log(city);
+  if (req.body) { //TODO: add some more sanity checks
+    var options = {
+      keys: [{
+        name: 'title',
+        weight: 0.5
+      }, {
+        name: 'address',
+        weight: 0.2
+      }, {
+        name: 'subway',
+        weight: 0.3
+      }]
+    }
+    const data = await redis.get(city);
+    console.log(data)
+    const fuse = new fusejs(data, options);
+    const result = await fuse.search(query);
+    return res.json({
+      data: result,
+      error: null
+    });
+  }
+  res.json({
+    data: null,
+    error: 'Некорректный запрос'
+  });
+});
+
+app.listen(8080, () => { // process.env.PORT
   console.log(`UP & RUNNING ON ${process.env.PORT}`);
 });
