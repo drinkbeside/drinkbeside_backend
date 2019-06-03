@@ -149,36 +149,35 @@ app.post('/update_avatar', authorize, upload.single('image'), async (req, res, n
 app.post('/search', async(req, res) => {
   const query = req.body.query;
   const city = req.body.city;
-  console.log(query);
-  console.log(city);
-  if (req.body) { //TODO: add some more sanity checks
-    var options = {
-      keys: [{
-        name: 'title',
-        weight: 0.5
-      }, {
-        name: 'address',
-        weight: 0.2
-      }, {
-        name: 'subway',
-        weight: 0.3
-      }]
-    }
-    const data = await redis.get(city);
-    console.log(data)
-    const fuse = new fusejs(data, options);
-    const result = await fuse.search(query);
-    return res.json({
-      data: result,
-      error: null
-    });
-  }
-  res.json({
+  if(!query || !city) return res.json({
     data: null,
     error: 'Некорректный запрос'
   });
+  var options = {
+    keys: [{
+      name: 'title',
+      weight: 0.5
+    }, {
+      name: 'address',
+      weight: 0.2
+    }, {
+      name: 'subway',
+      weight: 0.3
+    }]
+  }
+  const data = await redis.get(city);
+  if(!data) return res.json({
+    data: null,
+    error: 'Ошибка на стороне сервера, попробуйте позже'
+  });
+  const fuse = new fusejs(JSON.parse(data), options);
+  const result = await fuse.search(query);
+  res.json({
+    data: result,
+    error: null
+  });
 });
 
-app.listen(8080, () => { // process.env.PORT
+app.listen(process.env.PORT, () => {
   console.log(`UP & RUNNING ON ${process.env.PORT}`);
 });
