@@ -178,6 +178,34 @@ app.post('/search', async(req, res) => {
   });
 });
 
+app.post('/create_party', (req, res) => {
+  const hostID = req.body.hostID;
+  const invitedIDs = req.body.invitedIDs || [];
+  const name = req.body.name;
+  const isFree = req.body.isFree;
+  const minPrice = req.body.minPrice || 0;
+  const maxPrice = req.body.maxPrice || 0;
+  const address = req.body.address;
+  const type = req.body.type || 0;
+  const start = req.body.start;
+  const end = req.body.end || 0;
+  const minRating = req.body.minRating || 0.0;
+  const limit = req.body.limit || 0;
+  if(!hostID || !name || !isFree || !address || !start) return res.json({
+    data: null,
+    error: 'Указаны не все обязательные поля'
+  });
+  const party = await createParty({
+    hostID, invitedIDs, name, isFree,
+    minPrice, maxPrice, address, type,
+    start, end, minRating, limit
+  });
+  res.json({
+    data: party,
+    error: null
+  });
+});
+
 app.listen(process.env.PORT, () => {
   console.log(`UP & RUNNING ON ${process.env.PORT}`);
 });
