@@ -24,7 +24,8 @@ const {
   partyByID,
   createParty,
   inviteToParty,
-  suspendParty
+  suspendParty,
+  modifyParty
 } = require('./database/postgres');
 const { fetchPlaces } = require('./middleware/places');
 const { authorize } = require('./middleware/auth');
@@ -245,7 +246,26 @@ app.post('/suspend_party', async (req,res) => {
   if (!done) return res.json({
       data: null,
       error: 'Ошибка приостановки события.'
-    })
+    });
+  res.json({
+    data: done,
+    error: null
+  });
+});
+
+app.post('/modify_party', async (req,res) => {
+  const partyID = req.body.partyID;
+  const userID = req.headers.id;
+  const fields = req.body.fields;
+  const updateQueryArray = Object.keys(fields)
+      .filter(key => !(key in ['id','host_id','is_suspended']))
+      .map(key => `${key} = '${fields[key]}'`)
+      .join(',');
+  const done = await modifyParty(partyID, userID, updateQueryArray);
+  if (!done) return res.json({
+    data: null,
+    error: 'Ошибка изменения параметров события'
+  });
   res.json({
     data: done,
     error: null

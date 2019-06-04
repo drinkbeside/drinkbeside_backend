@@ -162,3 +162,19 @@ module.exports.suspendParty = (pid, uid) => {
 
   });
 };
+
+module.exports.modifyParty = (pid, uid, data) => {
+  return new Promise(async resolve => {
+    // TODO: epop xehdluhg
+    const party = await self.partyByID(pid);
+    if (uid !== party.host_id) return resolve(null);
+    pool.connect((err, client, done) => {
+      if (err) return resolve(null);
+      client.query(`UPDATE parties SET ${fields} WHERE id = ${pid} RETURNING *`, (err, result) => {
+        if (err) return resolve(null);
+        resolve(result.rows[0]);
+      });
+    });
+
+  });
+};
