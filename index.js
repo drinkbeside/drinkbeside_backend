@@ -245,11 +245,11 @@ app.post('/suspend_party', async (req,res) => {
   if (!done) return res.json({
     data: null,
     error: 'Ошибка приостановки события.'
-  })
+  });
   res.json({
     data: done,
     error: null
-  })
+  });
 });
 
 app.listen(process.env.PORT, () => {
