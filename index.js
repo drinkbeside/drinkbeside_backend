@@ -23,7 +23,8 @@ const {
   updateAvatar,
   partyByID,
   createParty,
-  inviteToParty
+  inviteToParty,
+  suspendParty
 } = require('./database/postgres');
 const { fetchPlaces } = require('./middleware/places');
 const { authorize } = require('./middleware/auth');
@@ -235,6 +236,20 @@ app.post('/invite_to_party', authorize, async (req, res) => {
     data: `Вы пригласили ${user.name} на ${party.name}`,
     error: null
   });
+});
+
+app.post('/suspend_party', async (req,res) => {
+  const partyID = req.body.partyID;
+  const userID = req.headers.id;
+  const done = await suspendParty(partyID, userID);
+  if (!done) return res.json({
+      data: null,
+      error: 'Ошибка приостановки события.'
+    })
+  res.json({
+    data: done,
+    error: null
+  })
 });
 
 app.listen(process.env.PORT, () => {
