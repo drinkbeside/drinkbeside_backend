@@ -207,6 +207,21 @@ app.post('/create_party', async (req, res) => {
   });
 });
 
+app.post('/invite_to_party', authorize, async (req, res) => {
+  const partyID = req.body.party_id;
+  const userID = req.headers.id;
+  const guestID = req.body.guest_id;
+  const { done, party, user } = await inviteToParty(partyID, userID, guestID);
+  if(!done) return res.json({
+    data: null,
+    error: 'Ошибка на стороне сервера, либо вы не хост события'
+  });
+  res.json({
+    data: `Вы пригласили ${user.name} на ${party.name}`,
+    error: null
+  });
+});
+
 app.listen(process.env.PORT, () => {
   console.log(`UP & RUNNING ON ${process.env.PORT}`);
 });
