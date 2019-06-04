@@ -243,9 +243,9 @@ app.post('/suspend_party', async (req,res) => {
   const userID = req.headers.id;
   const done = await suspendParty(partyID, userID);
   if (!done) return res.json({
-      data: null,
-      error: 'Ошибка приостановки события.'
-    })
+    data: null,
+    error: 'Ошибка приостановки события.'
+  })
   res.json({
     data: done,
     error: null

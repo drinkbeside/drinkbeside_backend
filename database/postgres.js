@@ -159,6 +159,5 @@ module.exports.suspendParty = (pid, uid) => {
         resolve(true);
       });
     });
-
   });
 };
