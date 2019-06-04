@@ -21,7 +21,9 @@ const {
   saveUser,
   updateUserInfo,
   updateAvatar,
-  createParty
+  partyByID,
+  createParty,
+  inviteToParty
 } = require('./database/postgres');
 const { fetchPlaces } = require('./middleware/places');
 const { authorize } = require('./middleware/auth');
@@ -179,6 +181,19 @@ app.post('/search', async(req, res) => {
   });
 });
 
+app.get('/party/:id', authorize, async (req, res) => {
+  const id = req.params.id;
+  const party = await partyByID(id);
+  if(!party) return res.json({
+    data: null,
+    error: 'Данной тусовки не существует'
+  });
+  res.json({
+    data: party,
+    error: null
+  });
+});
+
 app.post('/create_party', async (req, res) => {
   const hostID = req.body.hostID;
   const invitedIDs = req.body.invitedIDs || [];
@@ -209,7 +224,7 @@ app.post('/create_party', async (req, res) => {
 
 app.post('/invite_to_party', authorize, async (req, res) => {
   const partyID = req.body.party_id;
-  const userID = req.headers.id;
+  const userID = Number.parseInt(req.headers.id);
   const guestID = req.body.guest_id;
   const { done, party, user } = await inviteToParty(partyID, userID, guestID);
   if(!done) return res.json({
