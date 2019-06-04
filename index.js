@@ -23,7 +23,8 @@ const {
   updateAvatar,
   partyByID,
   createParty,
-  inviteToParty
+  inviteToParty,
+  suspendParty
 } = require('./database/postgres');
 const { fetchPlaces } = require('./middleware/places');
 const { authorize } = require('./middleware/auth');
