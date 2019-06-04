@@ -90,6 +90,14 @@ module.exports.createParty = ({
   return new Promise(resolve => {
     pool.connect((err, client, done) => {
       if(err) resolve(null);
+      console.log(`INSERT INTO parties(
+name, host_id, is_free, min_price, max_price,
+location, start_time, end_time, min_rating, type, invite_limit
+) VALUES('${name}', ${Number.parseInt(hostID)}, ${isFree},
+${Number.parseInt(minPrice)}, ${Number.parseInt(maxPrice)}, '${address}',
+${Number.parseFloat(start)}, ${Number.parseFloat(end)},
+${Number.parseFloat(minRating)}, ${Number.parseInt(type)},
+${Number.parseInt(limit)})`);
       client.query(`INSERT INTO parties(
 name, host_id, is_free, min_price, max_price,
 location, start_time, end_time, min_rating, type, invite_limit
