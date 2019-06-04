@@ -178,7 +178,7 @@ app.post('/search', async(req, res) => {
   });
 });
 
-app.post('/create_party', (req, res) => {
+app.post('/create_party', async (req, res) => {
   const hostID = req.body.hostID;
   const invitedIDs = req.body.invitedIDs || [];
   const name = req.body.name;
