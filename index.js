@@ -237,6 +237,31 @@ app.post('/invite_to_party', authorize, async (req, res) => {
   });
 });
 
+app.post('/suspend_party', async (req,res) => {
+  const partyID = req.body.partyID;
+  const userID = req.headers.id;
+  const party = await partyByID(partyID);
+  if (userID !== party.host_id) {
+    return res.json({
+      error: 'Вы не являетесь хостом.'
+    })
+  }
+  if (party.is_suspended) {
+    return res.json({
+      error: 'Событие уже приостановлено.'
+    })
+  }
+  const done = await suspendParty(partyID);
+  if (!done) {
+    return res.json({
+      error: 'Ошибка, не удалось приостановить событие.'
+    })
+  }
+  res.json({
+    error: null
+  })
+});
+
 app.listen(process.env.PORT, () => {
   console.log(`UP & RUNNING ON ${process.env.PORT}`);
 });
