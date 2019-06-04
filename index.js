@@ -110,7 +110,7 @@ app.post('/update_user_info', authorize, async (req, res) => {
   const id = Number.parseInt(data.id);
   const user = await userByID(id);
   if(user) {
-    const updateQueryArray = data.fields
+    const updateQueryArray = Object.keys(data.fields)
       .filter(key => key !== 'id' && key !== 'avatar')
       .map(key => `${key} = '${data.fields[key]}'`)
       .join(',');
