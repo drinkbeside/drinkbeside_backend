@@ -239,9 +239,9 @@ app.post('/invite_to_party', authorize, async (req, res) => {
   });
 });
 
-app.post('/suspend_party', async (req,res) => {
-  const partyID = req.body.partyID;
-  const userID = req.headers.id;
+app.post('/suspend_party', authorize, async (req,res) => {
+  const partyID = req.body.party_id;
+  const userID = Number.parseInt(req.headers.id);
   const done = await suspendParty(partyID, userID);
   if (!done) return res.json({
       data: null,
@@ -269,7 +269,7 @@ app.post('/modify_party', async (req,res) => {
   res.json({
     data: done,
     error: null
-  })
+  });
 });
 
 app.listen(process.env.PORT, () => {

@@ -150,16 +150,18 @@ module.exports.suspendParty = (pid, uid) => {
   return new Promise(async resolve => {
     // TODO: epop xehdluhg
     const party = await self.partyByID(pid);
+    console.log(party.host_id, uid);
     if (uid !== party.host_id) return resolve(null);
     if (party.is_suspended) return resolve(true);
     pool.connect((err, client, done) => {
+      console.log(err);
       if (err) return resolve(null);
-      client.query(`UPDATE parties SET is_suspended=True WHERE party_id=${pid}`, (err, result) => {
+      client.query(`UPDATE parties SET is_suspended=True WHERE id=${pid}`, (err, result) => {
+        console.log(err);
         if (err) return resolve(null);
         resolve(true);
       });
     });
-
   });
 };
 
