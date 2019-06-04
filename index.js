@@ -20,7 +20,8 @@ const {
   userByPhone,
   saveUser,
   updateUserInfo,
-  updateAvatar
+  updateAvatar,
+  createParty
 } = require('./database/postgres');
 const { fetchPlaces } = require('./middleware/places');
 const { authorize } = require('./middleware/auth');
