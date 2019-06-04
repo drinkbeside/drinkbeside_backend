@@ -64,7 +64,7 @@ module.exports.updateUserInfo = (id = null, fields = null) => {
       return client.query(`UPDATE users SET ${fields} WHERE id = ${id} RETURNING *`, (err, result) => {
         done();
         if(err) return resolve(null);
-        return resolve(resul.rows[0]);
+        return resolve(result.rows[0]);
       });
     });
   });
