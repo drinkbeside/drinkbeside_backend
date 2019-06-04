@@ -91,10 +91,20 @@ module.exports.createParty = ({
     pool.connect((err, client, done) => {
       if(err) resolve(null);
       client.query(`INSERT INTO parties(name, host_id, is_free, min_price, max_price, location, start_time, end_time, min_rating, type, invite_limit) VALUES('${name}', ${Number.parseInt(hostID)}, ${isFree}, ${Number.parseInt(minPrice)}, ${Number.parseInt(maxPrice)}, '${address}', ${Number.parseFloat(start)}, ${Number.parseFloat(end)}, ${Number.parseFloat(minRating)}, ${Number.parseInt(type)}, ${Number.parseInt(limit)}) RETURNING *`, (err, result) => {
-        done();
         if(err) resolve(null);
-        return resolve(result.rows[0]);
+        const party = result.rows[0];
+        if(invitedIDs.length > 1) {
+          const formatted = invitedIDs.map(id => `(${party.id}, ${id})`);
+          client.query(`INSERT INTO party_guests(party_id, guest_id) VALUES ${formatted.join(',')}`, (err, result) => {
+            done();
+            if(err) resolve(null);
+            resolve(party);
+          });
+        } else {
+          done();
+          resolve(party);
+        }
       });
     });
   });
-}
+};
