@@ -275,9 +275,9 @@ app.post('/modify_party', async (req, res) => {
 });
 
 app.post('/kick_guest', async (req, res) => {
-  const partyID = req.body.partyID;
-  const userID = req.headers.id;
-  const guestID = req.body.guestID;
+  const partyID = Number.parseInt(req.body.partyID);
+  const userID = Number.parseInt(req.headers.id);
+  const guestID = Number.parseInt(req.body.guestID);
   const done = await kickGuest(partyID, userID, guestID);
   if (!done) return res.json({
     data: null,
@@ -290,8 +290,8 @@ app.post('/kick_guest', async (req, res) => {
 });
 
 app.post('/leave_party', async (req, res) => {
-  const partyID = req.body.partyID;
-  const userID = req.headers.id;
+  const partyID = Number.parseInt(req.body.partyID);
+  const userID = Number.parseInt(req.headers.id);
   const done = await leaveParty(partyID, userID);
   if (!done) return res.json({
     data: null,
