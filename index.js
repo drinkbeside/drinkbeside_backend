@@ -25,7 +25,9 @@ const {
   createParty,
   inviteToParty,
   suspendParty,
-  modifyParty
+  modifyParty,
+  kickGuest,
+  leaveParty
 } = require('./database/postgres');
 const { fetchPlaces } = require('./middleware/places');
 const { authorize } = require('./middleware/auth');
@@ -277,6 +279,20 @@ app.post('/kick_guest', async (req, res) => {
   const userID = req.headers.id;
   const guestID = req.body.guestID;
   const done = await kickGuest(partyID, userID, guestID);
+  if (!done) return res.json({
+    data: null,
+    error: 'Ошибка исключения пользователя'
+  });
+  res.json({
+    data: done,
+    error: null
+  });
+});
+
+app.post('/leave_party', async (req, res) => {
+  const partyID = req.body.partyID;
+  const userID = req.headers.id;
+  const done = await leaveParty(partyID, userID);
   if (!done) return res.json({
     data: null,
     error: 'Ошибка исключения пользователя'

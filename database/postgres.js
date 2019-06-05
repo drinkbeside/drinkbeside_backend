@@ -192,3 +192,13 @@ module.exports.kickGuest = (pid, uid, gid) => {
     });
   });
 };
+
+module.exports.kickGuest = (pid, uid) => {
+  return new Promise(async resolve => {
+    pool.connect((err, client, done) => {
+      if (err) return resolve(null);
+      client.query(`DELETE FROM parties WHERE party_id = ${pid}, guest_id = ${uid}`);
+      resolve(true);
+    });
+  });
+};
