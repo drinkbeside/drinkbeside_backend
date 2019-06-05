@@ -25,7 +25,8 @@ const {
   createParty,
   inviteToParty,
   suspendParty,
-  modifyParty
+  modifyParty,
+  kickGuest
 } = require('./database/postgres');
 const { fetchPlaces } = require('./middleware/places');
 const { authorize } = require('./middleware/auth');
