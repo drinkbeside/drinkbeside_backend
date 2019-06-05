@@ -187,7 +187,7 @@ module.exports.kickGuest = (pid, uid, gid) => {
     if (uid !== party.host_id) return resolve(null);
     pool.connect((err, client, done) => {
       if (err) return resolve(null);
-      client.query(`DELETE FROM parties WHERE party_id = ${pid}, guest_id = ${gid}`);
+      client.query(`DELETE FROM party_guests WHERE party_id = ${pid} AND guest_id = ${gid}`);
       resolve(true);
     });
   });
@@ -197,7 +197,7 @@ module.exports.leaveParty = (pid, uid) => {
   return new Promise(async resolve => {
     pool.connect((err, client, done) => {
       if (err) return resolve(null);
-      client.query(`DELETE FROM parties WHERE party_id = ${pid}, guest_id = ${uid}`);
+      client.query(`DELETE FROM party_guests WHERE party_id = ${pid} AND guest_id = ${uid}`);
       resolve(true);
     });
   });
