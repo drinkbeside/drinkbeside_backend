@@ -193,7 +193,7 @@ module.exports.kickGuest = (pid, uid, gid) => {
   });
 };
 
-module.exports.kickGuest = (pid, uid) => {
+module.exports.leaveParty = (pid, uid) => {
   return new Promise(async resolve => {
     pool.connect((err, client, done) => {
       if (err) return resolve(null);
