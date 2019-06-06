@@ -132,7 +132,7 @@ app.post('/update_user_info', authorize, async (req, res) => {
 });
 
 app.post('/update_avatar', authorize, upload.single('image'), async (req, res, next) => {
-  const id = Number.parseInt(req.body.id);
+  const id = Number.parseInt(req.headers.id);
   const image = req.file.buffer;
   const path = `images/avatars/id_${id}.png`;
   try {
