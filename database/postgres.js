@@ -180,3 +180,15 @@ module.exports.modifyParty = (pid, uid, data) => {
 
   });
 };
+
+module.exports.joinParty = (pid, uid) => {
+  return new Promise(async resolve => {
+    const party = await self.partyByID(pid);
+    if (party.type === -1) return resolve(null);
+    pool.connect((err, client, done) => {
+      if (err) return resolve(null);
+      client.query(`INSERT INTO party_guests VALUES (${pid}, ${uid})`);
+      resolve(true);
+    })
+  })
+}
