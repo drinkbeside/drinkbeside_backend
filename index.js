@@ -153,7 +153,7 @@ app.post('/update_avatar', authorize, upload.single('image'), async (req, res, n
   });
 });
 
-app.post('/search', async (req, res) => {
+app.post('/search', authorize, async (req, res) => {
   const query = req.body.query;
   const city = req.body.city;
   if (!query || !city) return res.json({
@@ -198,7 +198,7 @@ app.get('/party/:id', authorize, async (req, res) => {
   });
 });
 
-app.post('/create_party', async (req, res) => {
+app.post('/create_party', authorize, async (req, res) => {
   const hostID = req.body.hostID;
   const invitedIDs = req.body.invitedIDs || [];
   const name = req.body.name;
@@ -255,9 +255,9 @@ app.post('/suspend_party', authorize, async (req, res) => {
   });
 });
 
-app.post('/modify_party', async (req, res) => {
+app.post('/modify_party', authorize, async (req, res) => {
   const partyID = req.body.partyID;
-  const userID = req.headers.id;
+  const userID = Number.parseInt(req.headers.id);
   const fields = req.body.fields;
   const updateQueryArray = Object.keys(fields)
     .filter(key => !(key in ['id', 'host_id', 'is_suspended']))
@@ -274,10 +274,10 @@ app.post('/modify_party', async (req, res) => {
   });
 });
 
-app.post('/kick_guest', async (req, res) => {
-  const partyID = Number.parseInt(req.body.partyID);
+app.post('/kick_guest', authorize, async (req, res) => {
+  const partyID = req.body.partyID;
   const userID = Number.parseInt(req.headers.id);
-  const guestID = Number.parseInt(req.body.guestID);
+  const guestID = req.body.guestID;
   const done = await kickGuest(partyID, userID, guestID);
   if (!done) return res.json({
     data: null,
@@ -289,8 +289,8 @@ app.post('/kick_guest', async (req, res) => {
   });
 });
 
-app.post('/leave_party', async (req, res) => {
-  const partyID = Number.parseInt(req.body.partyID);
+app.post('/leave_party', authorize, async (req, res) => {
+  const partyID = req.body.partyID;
   const userID = Number.parseInt(req.headers.id);
   const done = await leaveParty(partyID, userID);
   if (!done) return res.json({
