@@ -26,6 +26,7 @@ const {
   inviteToParty,
   suspendParty,
   modifyParty,
+  guestList,
   kickGuest,
   leaveParty
 } = require('./database/postgres');
@@ -274,6 +275,20 @@ app.post('/modify_party', authorize, async (req, res) => {
   });
 });
 
+app.get('/guest_list/:pid', authorize, async (req,res) => {
+  const partyID = req.params.pid;
+  const userID = Number.parseInt(req.headers.id);
+  const list = guestList(partyID, userID);
+  if (!list) return res.json({
+    data: null,
+    error: 'Ошибка получения списка участников'
+  });
+  res.json({
+    data: list,
+    error: null
+  });
+});
+    
 app.post('/kick_guest', authorize, async (req, res) => {
   const partyID = req.body.partyID;
   const userID = Number.parseInt(req.headers.id);
