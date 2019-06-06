@@ -25,7 +25,8 @@ const {
   createParty,
   inviteToParty,
   suspendParty,
-  modifyParty
+  modifyParty,
+  joinParty
 } = require('./database/postgres');
 const { fetchPlaces } = require('./middleware/places');
 const { authorize } = require('./middleware/auth');
@@ -265,6 +266,20 @@ app.post('/modify_party', async (req,res) => {
   if (!done) return res.json({
     data: null,
     error: 'Ошибка изменения параметров события'
+  });
+  res.json({
+    data: done,
+    error: null
+  });
+});
+
+app.post('/join_party', async (req, res) => {
+  const partyID = req.body.partyID;
+  const userID = Number.parseInt(req.headers.id);
+  done = await joinParty(partyID, userID);
+  if (!done) return res.json({
+    data: null,
+    error: 'Ошибка присоединения.'
   });
   res.json({
     data: done,
