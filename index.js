@@ -15,7 +15,7 @@ const app = express();
 const redis = asyncRedis.createClient();
 const upload = multer({
   dest: 'avatars/',
-  storage: multer.memoryStorage
+  storage: multer.memoryStorage()
 });
 // custom functions
 const {
