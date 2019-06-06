@@ -13,7 +13,10 @@ const jwt = require('jsonwebtoken');
 // system consts
 const app = express();
 const redis = asyncRedis.createClient();
-const upload = multer();
+const upload = multer({
+  dest: 'avatars/',
+  storage: multer.memoryStorage
+});
 // custom functions
 const {
   userByID,
