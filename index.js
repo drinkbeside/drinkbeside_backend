@@ -321,3 +321,16 @@ app.post('/leave_party', authorize, async (req, res) => {
 app.listen(process.env.PORT, () => {
   console.log(`UP & RUNNING ON ${process.env.PORT}`);
 });
+
+app.post('/find_city', authorize, async (req, res) => {
+  const city_query = req.body.city_query;
+  const done = await findCity(city_query);
+  if (!done) return res.json({
+    data:null,
+    error: 'Ошибка поиска населенного пункта'
+  });
+  res.json({
+    data: done,
+    error: null
+  })
+});

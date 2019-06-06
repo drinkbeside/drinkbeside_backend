@@ -223,3 +223,16 @@ module.exports.leaveParty = (pid, uid) => {
     });
   });
 };
+
+module.exports.getCities = () => {
+  return new Promise(resolve => {
+    pool.connect((err, client, done) => {
+      if (err) return resolve(null);
+      client.query(`SELECT * FROM cities`, (err, result) => {
+        if (err) return resolve(null);
+        done();
+        resolve(result.rows);
+      });
+    });
+  });
+};
