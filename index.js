@@ -34,8 +34,8 @@ const { fetchPlaces } = require('./middleware/places');
 const { authorize } = require('./middleware/auth');
 // express application configuration
 app.use(cors());
-app.use(bodyparser.json());
-app.use(bodyparser.urlencoded({ extended: true }));
+app.use(bodyparser.json({limit: '50mb', extended: true}));
+app.use(bodyparser.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static('public'));
 
 app.post('/send_code', async (req, res) => {
