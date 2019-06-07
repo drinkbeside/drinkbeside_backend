@@ -191,7 +191,7 @@ app.get('/party/:id', authorize, async (req, res) => {
   const party = await partyByID(id);
   if (!party) return res.json({
     data: null,
-    error: 'Данной тусовки не существует'
+    error: 'Данного события не существует'
   });
   res.json({
     data: party,
@@ -221,6 +221,10 @@ app.post('/create_party', authorize, async (req, res) => {
     minPrice, maxPrice, address, type,
     start, end, minRating, limit
   });
+  if(!party) return res.json({
+    data: null,
+    error: 'Невозможно создать событие'
+  })
   res.json({
     data: party,
     error: null
@@ -288,7 +292,7 @@ app.get('/guest_list/:pid', authorize, async (req,res) => {
     error: null
   });
 });
-    
+
 app.post('/kick_guest', authorize, async (req, res) => {
   const partyID = req.body.partyID;
   const userID = Number.parseInt(req.headers.id);
