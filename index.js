@@ -333,16 +333,19 @@ app.post('/find_city', authorize, async (req, res) => {
   const options = {
     keys: [{
       name: 'city_full_en',
-      weight: 0.5
+      weight: 0.3
     }, {
       name: 'city_full_ru',
       weight: 0.5
+    }, {
+      name: 'city_id',
+      weight: 0.2
     }]
   }
   const fuse = new fusejs(done, options);
   const result = await fuse.search(city_query);
   res.json({
-    data: city_query,
+    data: result,
     error: null
   })
 });
