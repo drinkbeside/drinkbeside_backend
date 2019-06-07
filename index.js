@@ -28,7 +28,8 @@ const {
   modifyParty,
   guestList,
   kickGuest,
-  leaveParty
+  leaveParty,
+  getCities
 } = require('./database/postgres');
 const { fetchPlaces } = require('./middleware/places');
 const { authorize } = require('./middleware/auth');
@@ -323,8 +324,8 @@ app.listen(process.env.PORT, () => {
 });
 
 app.post('/find_city', authorize, async (req, res) => {
-  const city_query = req.body.city_query;
-  const done = await findCity(city_query);
+  //const city_query = req.body.city_query;
+  const done = await getCities();
   if (!done) return res.json({
     data:null,
     error: 'Ошибка поиска населенного пункта'
