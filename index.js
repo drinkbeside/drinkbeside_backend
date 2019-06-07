@@ -26,22 +26,25 @@ const {
   inviteToParty,
   suspendParty,
   modifyParty,
-  joinParty
+  joinParty,
+  guestList,
+  kickGuest,
+  leaveParty
 } = require('./database/postgres');
 const { fetchPlaces } = require('./middleware/places');
 const { authorize } = require('./middleware/auth');
 // express application configuration
 app.use(cors());
-app.use(bodyparser.json());
-app.use(bodyparser.urlencoded({ extended: true }));
+app.use(bodyparser.json({limit: '50mb', extended: true}));
+app.use(bodyparser.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static('public'));
 
 app.post('/send_code', async (req, res) => {
   const phone = req.body.phoneNumber;
   const random = Math.floor(100000 + Math.random() * 900000);
-  await redis.set(phone.replace('+',''), random);
+  await redis.set(phone.replace('+', ''), random);
   setTimeout(() => {
-    redis.del(phone.replace('+',''));
+    redis.del(phone.replace('+', ''));
   }, process.env.SMS_TIMEOUT);
   const toSend = process.env.DEF_URL
     .replace('<phones>', phone)
@@ -52,7 +55,7 @@ app.post('/send_code', async (req, res) => {
       error: null,
       data: 'Code sent'
     });
-  } catch(e) {
+  } catch (e) {
     res.json({
       error: 'Ошибка отправки проверочного кода',
       data: null
@@ -61,15 +64,15 @@ app.post('/send_code', async (req, res) => {
 });
 
 app.post('/confirm_code', async (req, res) => {
-  const phone = req.body.phoneNumber.replace('+','');
+  const phone = req.body.phoneNumber.replace('+', '');
   const code = req.body.code;
   const codeKept = await redis.get(phone);
-  if(codeKept && codeKept === code) {
+  if (codeKept && codeKept === code) {
     let user = await userByPhone(phone);
-    if(!user) {
+    if (!user) {
       user = await saveUser(phone);
     };
-    if(user) {
+    if (user) {
       await redis.del(phone);
       const token = jwt.sign({ user }, process.env.SECRET);
       await redis.set(user.id, token);
@@ -91,7 +94,7 @@ app.post('/confirm_code', async (req, res) => {
 app.get('/user/:id', async (req, res) => {
   const id = Number.parseInt(req.params.id);
   const user = await userByID(id);
-  if(!user) return res.json({
+  if (!user) return res.json({
     error: `Невозможно найти пользователя с ID ${id}`,
     data: null
   });
@@ -112,13 +115,13 @@ app.post('/update_user_info', authorize, async (req, res) => {
   const data = req.body;
   const id = Number.parseInt(data.id);
   const user = await userByID(id);
-  if(user) {
+  if (user) {
     const updateQueryArray = Object.keys(data.fields)
       .filter(key => key !== 'id' && key !== 'avatar')
       .map(key => `${key} = '${data.fields[key]}'`)
       .join(',');
     const updatedUser = await updateUserInfo(id, updateQueryArray);
-    if(updatedUser) return res.json({
+    if (updatedUser) return res.json({
       error: null,
       data: updatedUser
     });
@@ -130,19 +133,19 @@ app.post('/update_user_info', authorize, async (req, res) => {
 });
 
 app.post('/update_avatar', authorize, upload.single('image'), async (req, res, next) => {
-  const id = Number.parseInt(req.body.id);
+  const id = Number.parseInt(req.headers.id);
   const image = req.file.buffer;
   const path = `images/avatars/id_${id}.png`;
   try {
     fs.writeFileSync(`public/${path}`, image);
-  } catch(e) {
+  } catch (e) {
     return res.json({
       error: 'Ошибка сохранения аватара, попробуйте заново',
       data: null
     });
   }
   const updatedUser = await updateAvatar(id, path);
-  if(updatedUser) return res.json({
+  if (updatedUser) return res.json({
     error: null,
     data: updatedUser
   });
@@ -152,10 +155,10 @@ app.post('/update_avatar', authorize, upload.single('image'), async (req, res, n
   });
 });
 
-app.post('/search', async(req, res) => {
+app.post('/search', authorize, async (req, res) => {
   const query = req.body.query;
   const city = req.body.city;
-  if(!query || !city) return res.json({
+  if (!query || !city) return res.json({
     data: null,
     error: 'Некорректный запрос'
   });
@@ -172,7 +175,7 @@ app.post('/search', async(req, res) => {
     }]
   }
   const data = await redis.get(city);
-  if(!data) return res.json({
+  if (!data) return res.json({
     data: null,
     error: 'Ошибка на стороне сервера, попробуйте позже'
   });
@@ -187,9 +190,9 @@ app.post('/search', async(req, res) => {
 app.get('/party/:id', authorize, async (req, res) => {
   const id = req.params.id;
   const party = await partyByID(id);
-  if(!party) return res.json({
+  if (!party) return res.json({
     data: null,
-    error: 'Данной тусовки не существует'
+    error: 'Данного события не существует'
   });
   res.json({
     data: party,
@@ -197,7 +200,7 @@ app.get('/party/:id', authorize, async (req, res) => {
   });
 });
 
-app.post('/create_party', async (req, res) => {
+app.post('/create_party', authorize, async (req, res) => {
   const hostID = req.body.hostID;
   const invitedIDs = req.body.invitedIDs || [];
   const name = req.body.name;
@@ -210,7 +213,7 @@ app.post('/create_party', async (req, res) => {
   const end = req.body.end || 0;
   const minRating = req.body.minRating || 0.0;
   const limit = req.body.limit || 0;
-  if(!hostID || !name || !isFree || !address || !start) return res.json({
+  if (!hostID || !name || !isFree || !address || !start) return res.json({
     data: null,
     error: 'Указаны не все обязательные поля'
   });
@@ -219,6 +222,10 @@ app.post('/create_party', async (req, res) => {
     minPrice, maxPrice, address, type,
     start, end, minRating, limit
   });
+  if(!party) return res.json({
+    data: null,
+    error: 'Невозможно создать событие'
+  })
   res.json({
     data: party,
     error: null
@@ -230,7 +237,7 @@ app.post('/invite_to_party', authorize, async (req, res) => {
   const userID = Number.parseInt(req.headers.id);
   const guestID = req.body.guest_id;
   const { done, party, user } = await inviteToParty(partyID, userID, guestID);
-  if(!done) return res.json({
+  if (!done) return res.json({
     data: null,
     error: 'Ошибка на стороне сервера, либо вы не хост события'
   });
@@ -240,28 +247,28 @@ app.post('/invite_to_party', authorize, async (req, res) => {
   });
 });
 
-app.post('/suspend_party', authorize, async (req,res) => {
+app.post('/suspend_party', authorize, async (req, res) => {
   const partyID = req.body.party_id;
   const userID = Number.parseInt(req.headers.id);
   const done = await suspendParty(partyID, userID);
   if (!done) return res.json({
-      data: null,
-      error: 'Ошибка приостановки события.'
-    });
+    data: null,
+    error: 'Ошибка приостановки события.'
+  });
   res.json({
     data: done,
     error: null
   });
 });
 
-app.post('/modify_party', async (req,res) => {
+app.post('/modify_party', authorize, async (req, res) => {
   const partyID = req.body.partyID;
-  const userID = req.headers.id;
+  const userID = Number.parseInt(req.headers.id);
   const fields = req.body.fields;
   const updateQueryArray = Object.keys(fields)
-      .filter(key => !(key in ['id','host_id','is_suspended']))
-      .map(key => `${key} = '${fields[key]}'`)
-      .join(',');
+    .filter(key => !(key in ['id', 'host_id', 'is_suspended']))
+    .map(key => `${key} = '${fields[key]}'`)
+    .join(',');
   const done = await modifyParty(partyID, userID, updateQueryArray);
   if (!done) return res.json({
     data: null,
@@ -279,7 +286,50 @@ app.post('/join_party', async (req, res) => {
   done = await joinParty(partyID, userID);
   if (!done) return res.json({
     data: null,
-    error: 'Ошибка присоединения.'
+    error: 'Ошибка присоединения'
+  });
+  res.json({
+    data: done,
+    error: null
+  });
+});
+
+app.get('/guest_list/:pid', authorize, async (req,res) => {
+  const partyID = req.params.pid;
+  const userID = Number.parseInt(req.headers.id);
+  const list = guestList(partyID, userID);
+  if (!list) return res.json({
+    data: null,
+    error: 'Ошибка получения списка участников'
+  });
+  res.json({
+    data: list,
+    error: null
+  });
+});
+
+app.post('/kick_guest', authorize, async (req, res) => {
+  const partyID = req.body.partyID;
+  const userID = Number.parseInt(req.headers.id);
+  const guestID = req.body.guestID;
+  const done = await kickGuest(partyID, userID, guestID);
+  if (!done) return res.json({
+    data: null,
+    error: 'Ошибка исключения пользователя'
+  });
+  res.json({
+    data: done,
+    error: null
+  });
+});
+
+app.post('/leave_party', authorize, async (req, res) => {
+  const partyID = req.body.partyID;
+  const userID = Number.parseInt(req.headers.id);
+  const done = await leaveParty(partyID, userID);
+  if (!done) return res.json({
+    data: null,
+    error: 'Ошибка исключения пользователя'
   });
   res.json({
     data: done,
