@@ -124,6 +124,19 @@ module.exports.partyByID = (id) => {
   });
 };
 
+module.exports.friendsByID = (id) => {
+  return new Promise(resolve => {
+    pool.connect((err, client, done) => {
+      if (err) return resolve(null);
+      client.query(`SELECT friend_id FROM friends WHERE user_id = ${id}`, (err, result) => {
+        done();
+        if (err) return resolve(null);
+        resolve(result.rows);
+      });
+    });
+  });
+};
+
 module.exports.inviteToParty = (pid, uid, gid) => {
   const error = { done: false, party: null, user: null };
   return new Promise(async resolve => {
@@ -196,7 +209,7 @@ module.exports.joinParty = (pid, uid) => {
 module.exports.guestList = (pid, uid) => {
   return new Promise(async resolve => {
     const party = await partyByID(pid);
-    if (party.type===-1 && party.host_id!==uid) return resolve(null);
+    if (party.type === -1 && party.host_id !== uid) return resolve(null);
     pool.connect((err, client, done) => {
       if (err) return resolve(null);
       client.query(`SELECT guest_id FROM party_guests WHERE party_id = ${pid}`, (err, result) => {

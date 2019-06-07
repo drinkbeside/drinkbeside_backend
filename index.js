@@ -187,6 +187,19 @@ app.post('/search', authorize, async (req, res) => {
   });
 });
 
+app.get('/friends/:id', authorize, async (req, res) => {
+  const id = req.params.id;
+  const friends = await fetchFriends(id);
+  if(!friends) return res.json({
+    data: null,
+    error: 'Ошибка подбора друзей, попробуйте позже'
+  });
+  res.json({
+    data: friends,
+    error: null
+  });
+});
+
 app.get('/party/:id', authorize, async (req, res) => {
   const id = req.params.id;
   const party = await partyByID(id);
