@@ -342,7 +342,7 @@ app.post('/find_city', authorize, async (req, res) => {
   const fuse = new fusejs(done, options);
   const result = await fuse.search(city_query);
   res.json({
-    data: result,
+    data: city_query,
     error: null
   })
 });
