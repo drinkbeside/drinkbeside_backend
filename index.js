@@ -324,14 +324,25 @@ app.listen(process.env.PORT, () => {
 });
 
 app.post('/find_city', authorize, async (req, res) => {
-  //const city_query = req.body.city_query;
+  const city_query = req.body.city_query;
   const done = await getCities();
   if (!done) return res.json({
     data:null,
     error: 'Ошибка поиска населенного пункта'
   });
+  const options = {
+    keys: [{
+      name: 'city_full_en',
+      weight: 0.5
+    }, {
+      name: 'city_full_ru',
+      weight: 0.5
+    }]
+  }
+  const fuse = new fusejs(done, options);
+  const result = await fuse.search(city_query);
   res.json({
-    data: done,
+    data: result,
     error: null
   })
 });
