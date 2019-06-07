@@ -177,7 +177,19 @@ module.exports.modifyParty = (pid, uid, data) => {
         resolve(result.rows[0]);
       });
     });
+  });
+};
 
+module.exports.joinParty = (pid, uid) => {
+  return new Promise(async resolve => {
+    const party = await self.partyByID(pid);
+    const user = await self.userByID(uid);
+    if (party.type === -1 || party.min_rating > user.rating ) return resolve(null);
+    pool.connect((err, client, done) => {
+      if (err) return resolve(null);
+      client.query(`INSERT INTO party_guests VALUES (${pid}, ${uid})`);
+      resolve(true);
+    });
   });
 };
 
@@ -192,9 +204,9 @@ module.exports.guestList = (pid, uid) => {
         if(err) return resolve(null);
         resolve(result.rows[0]);
       });
-    })
-  })
-}
+    });
+  });
+};
 
 module.exports.kickGuest = (pid, uid, gid) => {
   return new Promise(async resolve => {
