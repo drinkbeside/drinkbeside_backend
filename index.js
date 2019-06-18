@@ -22,6 +22,7 @@ const {
   updateUserInfo,
   updateAvatar,
   partyByID,
+  fetchParties,
   createParty,
   inviteToParty,
   suspendParty,
@@ -196,6 +197,19 @@ app.get('/friends/:id', authorize, async (req, res) => {
   });
   res.json({
     data: friends,
+    error: null
+  });
+});
+
+app.get('/parties', authorize, async (req, res) => {
+  const id = Number.parseInt(req.headers.id);
+  const parties = await fetchParties(id);
+  if(!parties) return res.json({
+    data: null,
+    error: 'Ошибка подбора событий, попробуйте позже'
+  });
+  res.json({
+    data: parties,
     error: null
   });
 });

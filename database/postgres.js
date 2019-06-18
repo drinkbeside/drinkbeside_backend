@@ -124,6 +124,19 @@ module.exports.partyByID = (id) => {
   });
 };
 
+module.exports.fetchParties = (id) => {
+  return new Promise(resolve => {
+    pool.connect((err, client, done) => {
+      if (err) return resolve(null);
+      client.query(`SELECT * FROM parties WHERE id IN (SELECT party_id FROM party_guests WHERE guest_id = ${id})`, (err, result) => {
+        done();
+        if (err) return resolve(null);
+        resolve(result.rows);
+      });
+    });
+  });
+};
+
 module.exports.friendsByID = (id) => {
   return new Promise(resolve => {
     pool.connect((err, client, done) => {
