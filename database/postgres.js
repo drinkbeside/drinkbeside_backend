@@ -228,7 +228,22 @@ module.exports.guestList = (pid, uid) => {
       client.query(`SELECT guest_id FROM party_guests WHERE party_id = ${pid}`, (err, result) => {
         done();
         if(err) return resolve(null);
-        resolve(result.rows[0]);
+        resolve(result.rows);
+      });
+    });
+  });
+};
+
+module.exports.fetchGuests = (pid, uid) => {
+  return new Promise(async resolve => {
+    const party = await partyByID(pid);
+    if (party.type === -1 && party.host_id !== uid) return resolve(null);
+    pool.connect((err, client, done) => {
+      if (err) return resolve(null);
+      client.query(`SELECT * FROM users WHERE id IN (SELECT guest_id FROM party_guests WHERE party_id = ${pid})`, (err, result) => {
+        done();
+        if(err) return resolve(null);
+        resolve(result.rows);
       });
     });
   });

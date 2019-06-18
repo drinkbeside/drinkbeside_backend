@@ -29,6 +29,7 @@ const {
   modifyParty,
   joinParty,
   guestList,
+  fetchGuests,
   kickGuest,
   leaveParty
 } = require('./database/postgres');
@@ -223,6 +224,24 @@ app.get('/party/:id', authorize, async (req, res) => {
   });
   res.json({
     data: party,
+    error: null
+  });
+});
+
+app.get('/rate_guests/:id', authorize, async (req, res) => {
+  const userID = Number.parseInt(req.headers.id);
+  const partyID = Number.parseInt(req.params.id);
+  if(!userID || !partyID) return res.json({
+    data: null,
+    error: 'Переданы не все необходимые параметры'
+  });
+  const guests = await fetchGuests(userID, partyID);
+  if(!guests) return res.json({
+    data: null,
+    error: 'Скорее всего Вы не являетесь хостом события, либо события не существует'
+  });
+  res.json({
+    data: guests,
     error: null
   });
 });
