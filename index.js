@@ -20,6 +20,7 @@ const {
   userByPhone,
   saveUser,
   updateUserInfo,
+  updateRating,
   updateAvatar,
   partyByID,
   fetchParties,
@@ -230,7 +231,7 @@ app.get('/party/:id', authorize, async (req, res) => {
 
 app.get('/rate_guests/:id', authorize, async (req, res) => {
   const userID = Number.parseInt(req.headers.id);
-  const partyID = Number.parseInt(req.params.id);
+  const partyID = req.params.id;
   if(!userID || !partyID) return res.json({
     data: null,
     error: 'Переданы не все необходимые параметры'
@@ -242,6 +243,25 @@ app.get('/rate_guests/:id', authorize, async (req, res) => {
   });
   res.json({
     data: guests,
+    error: null
+  });
+});
+
+app.post('/rate', authorize, async (req, res) => {
+  const userID = Number.parseInt(req.headers.id);
+  const guestID = req.body.guest_id;
+  const rating = Number.parseInt(req.body.rating);
+  if(!guestID || !rating) return res.json({
+    data: null,
+    error: 'Переданы не все необходимые параметры'
+  });
+  const user = await updateRating(guestID, userID, rating);
+  if(!user) return res.json({
+    data: null,
+    error: 'Невозможно поставить оценку пользователю'
+  });
+  res.json({
+    data: `Рейтинг пользователя ${user.fname} ${user.lname} обновлен`,
     error: null
   });
 });
