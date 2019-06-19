@@ -1,5 +1,5 @@
-const { Pool } = require('pg');
 require('dotenv').config();
+const { Pool } = require('pg');
 
 const self = this;
 
@@ -9,20 +9,22 @@ const pool = new Pool({
   connectionString: config.DB_URL,
 });
 
-pool.on('error', (err) => {
-  console.error('Unexpected error on idle client', err)
-  process.exit(-1)
-});
+pool.on('error', (err) => process.exit(-1));
 
 module.exports.userByPhone = (phone = null) => {
   return new Promise(resolve => {
     if (!phone) return resolve(null);
-    pool.connect((err, client, done) => {
+    return pool.connect((err, client, done) => {
       if (err) return resolve(null);
-      client.query(`SELECT * FROM users WHERE phone='${phone}'`, (err, result) => {
+      client.query(`SELECT * FROM users WHERE phone = '${phone}'`, async (err, result) => {
         done();
         if (err) return resolve(null);
-        resolve(result.rows[0]);
+        const user = result.rows[0];
+        const rating = await self.ratingByID(id);
+        return resolve({
+          ...user,
+          rating: rating
+        });
       });
     });
   });
@@ -31,12 +33,31 @@ module.exports.userByPhone = (phone = null) => {
 module.exports.userByID = (id = null) => {
   return new Promise(resolve => {
     if (!id) return resolve(null);
-    pool.connect((err, client, done) => {
+    return pool.connect((err, client, done) => {
       if (err) return resolve(null);
-      client.query(`SELECT * FROM users WHERE id=${id}`, (err, result) => {
+      client.query(`SELECT * FROM users WHERE id = ${id}`, async (err, result) => {
         done();
         if (err) return resolve(null);
-        return resolve(result.rows[0]);
+        const user = result.rows[0];
+        const rating = await self.ratingByID(id);
+        return resolve({
+          ...user,
+          rating: rating
+        });
+      });
+    });
+  });
+};
+
+module.exports.ratingByID = (id = null) => {
+  return new Promise(resolve => {
+    if (!id) return resolve(null);
+    return pool.connect((err, client, done) => {
+      if (err) return resolve(null);
+      client.query(`SELECT rating FROM user_rating WHERE user_id = ${id} LIMIT 20`, (err, result) => {
+        done();
+        if (err) return resolve(null);
+        return resolve(result.rows);
       });
     });
   });
@@ -70,10 +91,24 @@ module.exports.updateUserInfo = (id = null, fields = null) => {
   });
 };
 
+module.exports.updateRating = (uid = null, rid = null, rating = 5) => {
+  return new Promise(resolve => {
+    if (!uid || !rid) return resolve(null);
+    return pool.connect((err, client, done) => {
+      if (err) return resolve(null);
+      return client.query(`INSERT INTO user_rating(user_id, reviewer_id, rating) VALUES(${uid}, ${rid}, ${rating})`, (err, result) => {
+        done();
+        if (err) return resolve(null);
+        return resolve(true);
+      });
+    });
+  });
+};
+
 module.exports.updateAvatar = (id = null, path = null) => {
   return new Promise(resolve => {
     if (!id || !path) return resolve(null);
-    pool.connect((err, client, done) => {
+    return pool.connect((err, client, done) => {
       if (err) return resolve(null);
       client.query(`UPDATE users SET avatar = '${path}' WHERE id = ${id} RETURNING *`, (err, result) => {
         done();
@@ -90,7 +125,7 @@ module.exports.createParty = ({
   start, end, minRating, limit
 }) => {
   return new Promise(resolve => {
-    pool.connect((err, client, done) => {
+    return pool.connect((err, client, done) => {
       if (err) return resolve(null);
       client.query(`INSERT INTO parties(name, host_id, is_free, min_price, max_price, location, start_time, end_time, min_rating, type, invite_limit) VALUES('${name}', ${Number.parseInt(hostID)}, ${isFree}, ${Number.parseInt(minPrice)}, ${Number.parseInt(maxPrice)}, '${address}', ${Number.parseFloat(start)}, ${Number.parseFloat(end)}, ${Number.parseFloat(minRating)}, ${Number.parseInt(type)}, ${Number.parseInt(limit)}) RETURNING *`, (err, result) => {
         if (err) return resolve(null);
@@ -100,69 +135,73 @@ module.exports.createParty = ({
           client.query(`INSERT INTO party_guests(party_id, guest_id) VALUES ${formatted.join(',')}`, (err, result) => {
             done();
             if (err) return resolve(null);
-            resolve(party);
+            return resolve(party);
           });
         } else {
           done();
-          resolve(party);
+          return resolve(party);
         }
       });
     });
   });
 };
 
-module.exports.partyByID = (id) => {
+module.exports.partyByID = (id = null) => {
   return new Promise(resolve => {
-    pool.connect((err, client, done) => {
+    if (!id) return resolve(null);
+    return pool.connect((err, client, done) => {
       if (err) return resolve(null);
       client.query(`SELECT * FROM parties WHERE id = ${id}`, (err, result) => {
         done();
         if (err) return resolve(null);
-        resolve(result.rows[0]);
+        return resolve(result.rows[0]);
       });
     });
   });
 };
 
-module.exports.fetchParties = (id) => {
+module.exports.fetchParties = (id = null) => {
   return new Promise(resolve => {
-    pool.connect((err, client, done) => {
+    if (!id) return resolve(null);
+    return pool.connect((err, client, done) => {
       if (err) return resolve(null);
       client.query(`SELECT * FROM parties WHERE id IN (SELECT party_id FROM party_guests WHERE guest_id = ${id})`, (err, result) => {
         done();
         if (err) return resolve(null);
-        resolve(result.rows);
+        return resolve(result.rows);
       });
     });
   });
 };
 
-module.exports.friendsByID = (id) => {
+module.exports.friendsByID = (id = null) => {
   return new Promise(resolve => {
-    pool.connect((err, client, done) => {
+    if (!id) return resolve(null);
+    return pool.connect((err, client, done) => {
       if (err) return resolve(null);
       client.query(`SELECT friend_id FROM friends WHERE user_id = ${id}`, (err, result) => {
         done();
         if (err) return resolve(null);
-        resolve(result.rows);
+        return resolve(result.rows);
       });
     });
   });
 };
 
-module.exports.inviteToParty = (pid, uid, gid) => {
+module.exports.inviteToParty = (pid = null, uid = null, gid = null) => {
   const error = { done: false, party: null, user: null };
   return new Promise(async resolve => {
+    if (!pid || !uid || !gid) return resolve(error);
     const party = await self.partyByID(pid);
     if (!party || party.host_id !== uid) return resolve(error);
     const userToInvite = await self.userByID(gid);
     if (!userToInvite) return resolve(error);
-    pool.connect((err, client, done) => {
+    return pool.connect((err, client, done) => {
       if (err) return resolve(error);
       client.query(`INSERT INTO party_guests(party_id, guest_id) VALUES(${pid}, ${gid})`, (err, result) => {
         done();
         if (err) return resolve(error);
-        resolve({
+        return resolve({
           done: true,
           party: party,
           user: userToInvite
@@ -172,106 +211,113 @@ module.exports.inviteToParty = (pid, uid, gid) => {
   });
 };
 
-module.exports.suspendParty = (pid, uid) => {
+module.exports.suspendParty = (pid = null, uid = null) => {
   return new Promise(async resolve => {
-    // TODO: epop xehdluhg
+    if (!pid || !uid) return resolve(null);
     const party = await self.partyByID(pid);
-    console.log(party.host_id, uid);
     if (uid !== party.host_id) return resolve(null);
     if (party.is_suspended) return resolve(true);
-    pool.connect((err, client, done) => {
+    return pool.connect((err, client, done) => {
       console.log(err);
       if (err) return resolve(null);
       client.query(`UPDATE parties SET is_suspended=True WHERE id=${pid}`, (err, result) => {
         console.log(err);
         if (err) return resolve(null);
-        resolve(true);
+        return resolve(true);
       });
     });
   });
 };
 
-module.exports.modifyParty = (pid, uid, data) => {
+module.exports.modifyParty = (pid = null, uid = null, data = null) => {
   return new Promise(async resolve => {
-    // TODO: epop xehdluhg
+    if (!pid || !uid || !data) return resolve(null);
     const party = await self.partyByID(pid);
     if (uid !== party.host_id) return resolve(null);
-    pool.connect((err, client, done) => {
+    return pool.connect((err, client, done) => {
       if (err) return resolve(null);
       client.query(`UPDATE parties SET ${fields} WHERE id = ${pid} RETURNING *`, (err, result) => {
         if (err) return resolve(null);
-        resolve(result.rows[0]);
+        return resolve(result.rows[0]);
       });
     });
   });
 };
 
-module.exports.joinParty = (pid, uid) => {
+module.exports.joinParty = (pid = null, uid = null) => {
   return new Promise(async resolve => {
+    if (!pid || !uid) return resolve(null);
     const party = await self.partyByID(pid);
     const user = await self.userByID(uid);
     if (party.type === -1 || party.min_rating > user.rating ) return resolve(null);
-    pool.connect((err, client, done) => {
+    return pool.connect((err, client, done) => {
       if (err) return resolve(null);
-      client.query(`INSERT INTO party_guests VALUES (${pid}, ${uid})`);
-      resolve(true);
+      client.query(`INSERT INTO party_guests VALUES (${pid}, ${uid})`, (err, result) => {
+        done();
+        if (err) return resolve(null);
+        return resolve(true);
+      });
     });
   });
 };
 
-module.exports.guestList = (pid, uid) => {
+module.exports.guestList = (pid = null, uid = null) => {
   return new Promise(async resolve => {
+    if (!pid || !uid) return resolve(null);
     const party = await partyByID(pid);
     if (party.type === -1 && party.host_id !== uid) return resolve(null);
-    pool.connect((err, client, done) => {
+    return pool.connect((err, client, done) => {
       if (err) return resolve(null);
       client.query(`SELECT guest_id FROM party_guests WHERE party_id = ${pid}`, (err, result) => {
         done();
         if(err) return resolve(null);
-        resolve(result.rows);
+        return resolve(result.rows);
       });
     });
   });
 };
 
-module.exports.fetchGuests = (pid, uid) => {
+module.exports.fetchGuests = (pid = null, uid = null) => {
   return new Promise(async resolve => {
+    if (!pid || !uid) return resolve(null);
     const party = await partyByID(pid);
     if (party.type === -1 && party.host_id !== uid) return resolve(null);
-    pool.connect((err, client, done) => {
+    return pool.connect((err, client, done) => {
       if (err) return resolve(null);
       client.query(`SELECT * FROM users WHERE id IN (SELECT guest_id FROM party_guests WHERE party_id = ${pid})`, (err, result) => {
         done();
         if(err) return resolve(null);
-        resolve(result.rows);
+        return resolve(result.rows);
       });
     });
   });
 };
 
-module.exports.kickGuest = (pid, uid, gid) => {
+module.exports.kickGuest = (pid = null, uid = null, gid = null) => {
   return new Promise(async resolve => {
+    if (!pid || !uid || !gid) return resolve(null);
     const party = await self.partyByID(pid);
     if (uid !== party.host_id) return resolve(null);
-    pool.connect((err, client, done) => {
+    return pool.connect((err, client, done) => {
       if (err) return resolve(null);
       client.query(`DELETE FROM party_guests WHERE party_id = ${pid} AND guest_id = ${gid}`, (err, result) => {
         if (err) return resolve(null);
         done();
-        resolve(true);
+        return resolve(true);
       });
     });
   });
 };
 
-module.exports.leaveParty = (pid, uid) => {
+module.exports.leaveParty = (pid = null, uid = null) => {
   return new Promise(resolve => {
-    pool.connect((err, client, done) => {
+    if (!pid || !uid) return resolve(null);
+    return pool.connect((err, client, done) => {
       if (err) return resolve(null);
       client.query(`DELETE FROM party_guests WHERE party_id = ${pid} AND guest_id = ${uid}`, (err, result) => {
         if (err) return resolve(null);
         done();
-        resolve(true);
+        return resolve(true);
       });
     });
   });
