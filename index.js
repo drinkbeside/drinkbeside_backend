@@ -41,7 +41,7 @@ app.use(cors());
 app.use(bodyparser.json({limit: '50mb', extended: true}));
 app.use(bodyparser.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static('public'));
-
+// sign up & sign in endpoints
 app.post('/send_code', async (req, res) => {
   const phone = req.body.phoneNumber;
   const random = Math.floor(100000 + Math.random() * 900000);
@@ -93,7 +93,8 @@ app.post('/confirm_code', async (req, res) => {
     data: null
   });
 });
-
+// end of sign up & sign in endpoints
+// user related endpoints
 app.get('/user/:id', async (req, res) => {
   const id = Number.parseInt(req.params.id);
   const user = await userByID(id);
@@ -110,9 +111,31 @@ app.get('/user/:id', async (req, res) => {
   });
 });
 
-app.post('/places', authorize, async (req, res) => {
-  await fetchPlaces(res, req.body.city);
+app.get('/parties', authorize, async (req, res) => {
+  const id = Number.parseInt(req.headers.id);
+  const parties = await fetchParties(id);
+  if(!parties) return res.json({
+    data: null,
+    error: 'Ошибка подбора событий, попробуйте позже'
+  });
+  res.json({
+    data: parties,
+    error: null
+  });
 });
+
+// app.get('/friends/:id', authorize, async (req, res) => {
+//   const id = req.params.id;
+//   const friends = await fetchFriends(id);
+//   if(!friends) return res.json({
+//     data: null,
+//     error: 'Ошибка подбора друзей, попробуйте позже'
+//   });
+//   res.json({
+//     data: friends,
+//     error: null
+//   });
+// });
 
 app.post('/update_user_info', authorize, async (req, res) => {
   const data = req.body;
@@ -158,6 +181,58 @@ app.post('/update_avatar', authorize, upload.single('image'), async (req, res, n
   });
 });
 
+app.post('/rate', authorize, async (req, res) => {
+  const userID = Number.parseInt(req.headers.id);
+  const guestID = req.body.guest_id;
+  const rating = Number.parseInt(req.body.rating);
+  if(!guestID || !rating) return res.json({
+    data: null,
+    error: 'Переданы не все необходимые параметры'
+  });
+  const user = await updateRating(guestID, userID, rating);
+  if(!user) return res.json({
+    data: null,
+    error: 'Невозможно поставить оценку пользователю'
+  });
+  res.json({
+    data: `Рейтинг пользователя ${user.fname} ${user.lname} обновлен`,
+    error: null
+  });
+});
+
+app.post('/join_party', async (req, res) => {
+  const partyID = req.body.partyID;
+  const userID = Number.parseInt(req.headers.id);
+  done = await joinParty(partyID, userID);
+  if (!done) return res.json({
+    data: null,
+    error: 'Ошибка присоединения'
+  });
+  res.json({
+    data: done,
+    error: null
+  });
+});
+
+app.post('/leave_party', authorize, async (req, res) => {
+  const partyID = req.body.partyID;
+  const userID = Number.parseInt(req.headers.id);
+  const done = await leaveParty(partyID, userID);
+  if (!done) return res.json({
+    data: null,
+    error: 'Ошибка исключения пользователя'
+  });
+  res.json({
+    data: done,
+    error: null
+  });
+});
+// end of user related endpoints
+// places related endpoints
+app.post('/places', authorize, async (req, res) => {
+  await fetchPlaces(res, req.body.city);
+});
+
 app.post('/search', authorize, async (req, res) => {
   const query = req.body.query;
   const city = req.body.city;
@@ -189,33 +264,8 @@ app.post('/search', authorize, async (req, res) => {
     error: null
   });
 });
-
-// app.get('/friends/:id', authorize, async (req, res) => {
-//   const id = req.params.id;
-//   const friends = await fetchFriends(id);
-//   if(!friends) return res.json({
-//     data: null,
-//     error: 'Ошибка подбора друзей, попробуйте позже'
-//   });
-//   res.json({
-//     data: friends,
-//     error: null
-//   });
-// });
-
-app.get('/parties', authorize, async (req, res) => {
-  const id = Number.parseInt(req.headers.id);
-  const parties = await fetchParties(id);
-  if(!parties) return res.json({
-    data: null,
-    error: 'Ошибка подбора событий, попробуйте позже'
-  });
-  res.json({
-    data: parties,
-    error: null
-  });
-});
-
+// end of places related endpoints
+// party/event related endpoints
 app.get('/party/:id', authorize, async (req, res) => {
   const id = req.params.id;
   const party = await partyByID(id);
@@ -225,43 +275,6 @@ app.get('/party/:id', authorize, async (req, res) => {
   });
   res.json({
     data: party,
-    error: null
-  });
-});
-
-app.get('/rate_guests/:id', authorize, async (req, res) => {
-  const userID = Number.parseInt(req.headers.id);
-  const partyID = req.params.id;
-  if(!userID || !partyID) return res.json({
-    data: null,
-    error: 'Переданы не все необходимые параметры'
-  });
-  const guests = await fetchGuests(userID, partyID);
-  if(!guests) return res.json({
-    data: null,
-    error: 'Скорее всего Вы не являетесь хостом события, либо события не существует'
-  });
-  res.json({
-    data: guests,
-    error: null
-  });
-});
-
-app.post('/rate', authorize, async (req, res) => {
-  const userID = Number.parseInt(req.headers.id);
-  const guestID = req.body.guest_id;
-  const rating = Number.parseInt(req.body.rating);
-  if(!guestID || !rating) return res.json({
-    data: null,
-    error: 'Переданы не все необходимые параметры'
-  });
-  const user = await updateRating(guestID, userID, rating);
-  if(!user) return res.json({
-    data: null,
-    error: 'Невозможно поставить оценку пользователю'
-  });
-  res.json({
-    data: `Рейтинг пользователя ${user.fname} ${user.lname} обновлен`,
     error: null
   });
 });
@@ -298,35 +311,6 @@ app.post('/create_party', authorize, async (req, res) => {
   });
 });
 
-app.post('/invite_to_party', authorize, async (req, res) => {
-  const partyID = req.body.party_id;
-  const userID = Number.parseInt(req.headers.id);
-  const guestID = req.body.guest_id;
-  const { done, party, user } = await inviteToParty(partyID, userID, guestID);
-  if (!done) return res.json({
-    data: null,
-    error: 'Ошибка на стороне сервера, либо вы не хост события'
-  });
-  res.json({
-    data: `Вы пригласили ${user.name} на ${party.name}`,
-    error: null
-  });
-});
-
-app.post('/suspend_party', authorize, async (req, res) => {
-  const partyID = req.body.party_id;
-  const userID = Number.parseInt(req.headers.id);
-  const done = await suspendParty(partyID, userID);
-  if (!done) return res.json({
-    data: null,
-    error: 'Ошибка приостановки события.'
-  });
-  res.json({
-    data: done,
-    error: null
-  });
-});
-
 app.post('/modify_party', authorize, async (req, res) => {
   const partyID = req.body.partyID;
   const userID = Number.parseInt(req.headers.id);
@@ -346,16 +330,31 @@ app.post('/modify_party', authorize, async (req, res) => {
   });
 });
 
-app.post('/join_party', async (req, res) => {
-  const partyID = req.body.partyID;
+app.post('/suspend_party', authorize, async (req, res) => {
+  const partyID = req.body.party_id;
   const userID = Number.parseInt(req.headers.id);
-  done = await joinParty(partyID, userID);
+  const done = await suspendParty(partyID, userID);
   if (!done) return res.json({
     data: null,
-    error: 'Ошибка присоединения'
+    error: 'Ошибка приостановки события.'
   });
   res.json({
     data: done,
+    error: null
+  });
+});
+
+app.post('/invite_to_party', authorize, async (req, res) => {
+  const partyID = req.body.party_id;
+  const userID = Number.parseInt(req.headers.id);
+  const guestID = req.body.guest_id;
+  const { done, party, user } = await inviteToParty(partyID, userID, guestID);
+  if (!done) return res.json({
+    data: null,
+    error: 'Ошибка на стороне сервера, либо вы не хост события'
+  });
+  res.json({
+    data: `Вы пригласили ${user.name} на ${party.name}`,
     error: null
   });
 });
@@ -374,6 +373,24 @@ app.get('/guest_list/:pid', authorize, async (req,res) => {
   });
 });
 
+app.get('/rate_guests/:id', authorize, async (req, res) => {
+  const userID = Number.parseInt(req.headers.id);
+  const partyID = req.params.id;
+  if(!userID || !partyID) return res.json({
+    data: null,
+    error: 'Переданы не все необходимые параметры'
+  });
+  const guests = await fetchGuests(userID, partyID);
+  if(!guests) return res.json({
+    data: null,
+    error: 'Скорее всего Вы не являетесь хостом события, либо события не существует'
+  });
+  res.json({
+    data: guests,
+    error: null
+  });
+});
+
 app.post('/kick_guest', authorize, async (req, res) => {
   const partyID = req.body.partyID;
   const userID = Number.parseInt(req.headers.id);
@@ -388,21 +405,8 @@ app.post('/kick_guest', authorize, async (req, res) => {
     error: null
   });
 });
-
-app.post('/leave_party', authorize, async (req, res) => {
-  const partyID = req.body.partyID;
-  const userID = Number.parseInt(req.headers.id);
-  const done = await leaveParty(partyID, userID);
-  if (!done) return res.json({
-    data: null,
-    error: 'Ошибка исключения пользователя'
-  });
-  res.json({
-    data: done,
-    error: null
-  });
-});
-
+// end of party/event related endpoints
+// running server
 app.listen(process.env.PORT, () => {
   console.log(`UP & RUNNING ON ${process.env.PORT}`);
 });
