@@ -190,18 +190,18 @@ app.post('/search', authorize, async (req, res) => {
   });
 });
 
-app.get('/friends/:id', authorize, async (req, res) => {
-  const id = req.params.id;
-  const friends = await fetchFriends(id);
-  if(!friends) return res.json({
-    data: null,
-    error: 'Ошибка подбора друзей, попробуйте позже'
-  });
-  res.json({
-    data: friends,
-    error: null
-  });
-});
+// app.get('/friends/:id', authorize, async (req, res) => {
+//   const id = req.params.id;
+//   const friends = await fetchFriends(id);
+//   if(!friends) return res.json({
+//     data: null,
+//     error: 'Ошибка подбора друзей, попробуйте позже'
+//   });
+//   res.json({
+//     data: friends,
+//     error: null
+//   });
+// });
 
 app.get('/parties', authorize, async (req, res) => {
   const id = Number.parseInt(req.headers.id);
@@ -363,7 +363,7 @@ app.post('/join_party', async (req, res) => {
 app.get('/guest_list/:pid', authorize, async (req,res) => {
   const partyID = req.params.pid;
   const userID = Number.parseInt(req.headers.id);
-  const list = guestList(partyID, userID);
+  const list = await fetchGuests(partyID, userID);
   if (!list) return res.json({
     data: null,
     error: 'Ошибка получения списка участников'

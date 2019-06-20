@@ -1,4 +1,4 @@
-require('dotenv').confg();
+require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const asyncRedis = require('async-redis');
 const redis = asyncRedis.createClient();

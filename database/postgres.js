@@ -20,7 +20,7 @@ module.exports.userByPhone = (phone = null) => {
         done();
         if (err) return resolve(null);
         const user = result.rows[0];
-        const rating = await self.ratingByID(id);
+        const rating = await self.ratingByID(user.id);
         return resolve({
           ...user,
           rating: rating
@@ -264,14 +264,15 @@ module.exports.joinParty = (pid = null, uid = null) => {
 module.exports.guestList = (pid = null, uid = null) => {
   return new Promise(async resolve => {
     if (!pid || !uid) return resolve(null);
-    const party = await partyByID(pid);
+    const party = await self.partyByID(pid);
     if (party.type === -1 && party.host_id !== uid) return resolve(null);
     return pool.connect((err, client, done) => {
       if (err) return resolve(null);
       client.query(`SELECT guest_id FROM party_guests WHERE party_id = ${pid}`, (err, result) => {
         done();
         if(err) return resolve(null);
-        return resolve(result.rows);
+        const rowIDs = result.rows.map(obj => obj.guest_id);
+        return resolve(rowIDs);
       });
     });
   });
@@ -280,13 +281,14 @@ module.exports.guestList = (pid = null, uid = null) => {
 module.exports.fetchGuests = (pid = null, uid = null) => {
   return new Promise(async resolve => {
     if (!pid || !uid) return resolve(null);
-    const party = await partyByID(pid);
+    const party = await self.partyByID(pid);
     if (party.type === -1 && party.host_id !== uid) return resolve(null);
     return pool.connect((err, client, done) => {
       if (err) return resolve(null);
       client.query(`SELECT * FROM users WHERE id IN (SELECT guest_id FROM party_guests WHERE party_id = ${pid})`, (err, result) => {
         done();
         if(err) return resolve(null);
+        console.log(result.rows);
         return resolve(result.rows);
       });
     });
