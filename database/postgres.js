@@ -20,7 +20,7 @@ module.exports.userByPhone = (phone = null) => {
         done();
         if (err) return resolve(null);
         const user = result.rows[0];
-        if(!user.id) return resolve(user);
+        if(!user) return resolve(user);
         const rating = await self.ratingByID(user.id);
         return resolve({
           ...user,
