@@ -230,8 +230,8 @@ app.post('/leave_party', authorize, async (req, res) => {
 
 app.post('/update_user_location', authorize, async (req, res) => {
   const userID = Number.parseInt(req.headers.id);
-  const cityID = req.body.cityID;
-  const done = await updateUserLocation(userID, cityID);
+  const city = req.body.city;
+  const done = await updateUserLocation(userID, city);
   if (!done) return res.json({
     data: null,
     error: 'Ошибка изменения города пользователя'
