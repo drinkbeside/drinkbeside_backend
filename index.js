@@ -304,7 +304,12 @@ app.post('/create_party', authorize, async (req, res) => {
   if(!party) return res.json({
     data: null,
     error: 'Невозможно создать событие'
-  })
+  });
+  done = await joinParty(party.id, Number.parseInt(req.headers.id));
+  if (!done) return res.json({
+    data: null,
+    error: 'Ошибка создания тусовки'
+  });
   res.json({
     data: party,
     error: null
