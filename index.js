@@ -122,14 +122,15 @@ app.get('/parties', authorize, async (req, res) => {
       guests: list.length
     };
   });
-  console.log(partiesFormatted);
   if(!parties) return res.json({
     data: null,
     error: 'Ошибка подбора событий, попробуйте позже'
   });
-  res.json({
-    data: partiesFormatted,
-    error: null
+  Promise.all(partiesFormatted).then(result => {
+    res.json({
+      data: result,
+      error: null
+    });
   });
 });
 
