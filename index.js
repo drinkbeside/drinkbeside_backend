@@ -114,16 +114,15 @@ app.get('/user/:id', async (req, res) => {
 app.get('/parties', authorize, async (req, res) => {
   const id = Number.parseInt(req.headers.id);
   const parties = await fetchParties(id);
-  console.log(parties);
   const partiesFormatted = await parties.map(async party => {
     const partyID = party.id;
     const list = await guestList(partyID, id);
-    console.log(list);
     return {
       ...party,
       guests: list.length
     };
   });
+  console.log(partiesFormatted);
   if(!parties) return res.json({
     data: null,
     error: 'Ошибка подбора событий, попробуйте позже'
