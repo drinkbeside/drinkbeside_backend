@@ -133,7 +133,7 @@ module.exports.createParty = ({
         const party = result.rows[0];
         if (invitedIDs.length > 1) {
           const formatted = invitedIDs.map(id => `(${party.id}, ${id})`);
-          client.query(`INSERT INTO party_guests(party_id, guest_id) VALUES ${formatted.join(',')}`, (err, result) => {
+          client.query(`INSERT INTO party_guests_pending(party_id, guest_id) VALUES ${formatted.join(',')}`, (err, result) => {
             done();
             if (err) return resolve(null);
             return resolve(party);
