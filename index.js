@@ -30,9 +30,13 @@ const {
   modifyParty,
   joinParty,
   guestList,
+  guestListPending,
   fetchGuests,
+  fetchGuestsPending,
   kickGuest,
-  leaveParty
+  kickGuestPending,
+  leaveParty,
+  declineInvitation
 } = require('./database/postgres');
 const { fetchPlaces } = require('./middleware/places');
 const { authorize } = require('./middleware/auth');
@@ -117,9 +121,11 @@ app.get('/parties', authorize, async (req, res) => {
   const partiesFormatted = await parties.map(async party => {
     const partyID = party.id;
     const list = await guestList(partyID, id);
+    const listPending = await guestListPending(partyID, id);
     return {
       ...party,
-      guests: list.length
+      guests: list.length,
+      pending_guests: listPending.length
     };
   });
   if(!parties) return res.json({
@@ -378,12 +384,16 @@ app.get('/guest_list/:pid', authorize, async (req,res) => {
   const partyID = req.params.pid;
   const userID = Number.parseInt(req.headers.id);
   const list = await fetchGuests(partyID, userID);
+  const listPending = await fetchGuestsPending(partyID, userID);
   if (!list) return res.json({
     data: null,
     error: 'Ошибка получения списка участников'
   });
   res.json({
-    data: list,
+    data: {
+      going: list,
+      pending: listPending
+    },
     error: null
   });
 });

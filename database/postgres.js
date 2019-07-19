@@ -199,7 +199,7 @@ module.exports.inviteToParty = (pid = null, uid = null, gid = null) => {
     if (!userToInvite) return resolve(error);
     return pool.connect((err, client, done) => {
       if (err) return resolve(error);
-      client.query(`INSERT INTO party_guests(party_id, guest_id) VALUES(${pid}, ${gid})`, (err, result) => {
+      client.query(`INSERT INTO party_guests_pending(party_id, guest_id) VALUES(${pid}, ${gid})`, (err, result) => {
         done();
         if (err) return resolve(error);
         return resolve({
@@ -254,9 +254,12 @@ module.exports.joinParty = (pid = null, uid = null) => {
     return pool.connect((err, client, done) => {
       if (err) return resolve(null);
       client.query(`INSERT INTO party_guests VALUES (${pid}, ${uid})`, (err, result) => {
-        done();
-        if (err) return resolve(null);
-        return resolve(true);
+        if(err) return resolve(null);
+        client.query(`DELETE FROM party_guests_pending WHERE guest_id = ${uid} AND party_id = ${pid}`, (err, result) => {
+          done();
+          if (err) return resolve(null);
+          return resolve(true);
+        });
       });
     });
   });
@@ -270,6 +273,23 @@ module.exports.guestList = (pid = null, uid = null) => {
     return pool.connect((err, client, done) => {
       if (err) return resolve(null);
       client.query(`SELECT guest_id FROM party_guests WHERE party_id = ${pid}`, (err, result) => {
+        done();
+        if(err) return resolve(null);
+        const rowIDs = result.rows.map(obj => obj.guest_id);
+        return resolve(rowIDs);
+      });
+    });
+  });
+};
+
+module.exports.guestListPending = (pid = null, uid = null) => {
+  return new Promise(async resolve => {
+    if (!pid || !uid) return resolve(null);
+    const party = await self.partyByID(pid);
+    if (party.type === -1 && party.host_id !== uid) return resolve(null);
+    return pool.connect((err, client, done) => {
+      if (err) return resolve(null);
+      client.query(`SELECT guest_id FROM party_guests_pending WHERE party_id = ${pid}`, (err, result) => {
         done();
         if(err) return resolve(null);
         const rowIDs = result.rows.map(obj => obj.guest_id);
@@ -296,6 +316,23 @@ module.exports.fetchGuests = (pid = null, uid = null) => {
   });
 };
 
+module.exports.fetchGuestsPending = (pid = null, uid = null) => {
+  return new Promise(async resolve => {
+    if (!pid || !uid) return resolve(null);
+    const party = await self.partyByID(pid);
+    if (party.type === -1 && party.host_id !== uid) return resolve(null);
+    return pool.connect((err, client, done) => {
+      if (err) return resolve(null);
+      client.query(`SELECT * FROM users WHERE id IN (SELECT guest_id FROM party_guests_pending WHERE party_id = ${pid})`, (err, result) => {
+        done();
+        if(err) return resolve(null);
+        console.log(result.rows);
+        return resolve(result.rows);
+      });
+    });
+  });
+};
+
 module.exports.kickGuest = (pid = null, uid = null, gid = null) => {
   return new Promise(async resolve => {
     if (!pid || !uid || !gid) return resolve(null);
@@ -312,12 +349,42 @@ module.exports.kickGuest = (pid = null, uid = null, gid = null) => {
   });
 };
 
+module.exports.kickGuestPending = (pid = null, uid = null, gid = null) => {
+  return new Promise(async resolve => {
+    if (!pid || !uid || !gid) return resolve(null);
+    const party = await self.partyByID(pid);
+    if (uid !== party.host_id) return resolve(null);
+    return pool.connect((err, client, done) => {
+      if (err) return resolve(null);
+      client.query(`DELETE FROM party_guests_pending WHERE party_id = ${pid} AND guest_id = ${gid}`, (err, result) => {
+        if (err) return resolve(null);
+        done();
+        return resolve(true);
+      });
+    });
+  });
+};
+
 module.exports.leaveParty = (pid = null, uid = null) => {
   return new Promise(resolve => {
     if (!pid || !uid) return resolve(null);
     return pool.connect((err, client, done) => {
       if (err) return resolve(null);
       client.query(`DELETE FROM party_guests WHERE party_id = ${pid} AND guest_id = ${uid}`, (err, result) => {
+        if (err) return resolve(null);
+        done();
+        return resolve(true);
+      });
+    });
+  });
+};
+
+module.exports.declineInvitation = (pid = null, uid = null) => {
+  return new Promise(resolve => {
+    if (!pid || !uid) return resolve(null);
+    return pool.connect((err, client, done) => {
+      if (err) return resolve(null);
+      client.query(`DELETE FROM party_guests_pending WHERE party_id = ${pid} AND guest_id = ${uid}`, (err, result) => {
         if (err) return resolve(null);
         done();
         return resolve(true);
