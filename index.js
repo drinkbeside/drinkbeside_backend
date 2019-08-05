@@ -366,15 +366,15 @@ app.post('/modify_party', authorize, async (req, res) => {
   });
 });
 
-/*
+/**
  * @swagger
  * /suspend_party:
  *    post:
  *      parameters:
  *        - name: partyID
- *        in: body
+ *          in: body
  *        - name: userID
- *        in: headers
+ *          in: headers
  *      responses:
  *        200:
  *          schema:
@@ -399,7 +399,7 @@ app.post('/suspend_party', authorize, async (req, res) => {
   });
 });
 
-/*
+/**
  * @swagger
  * /invite_to_party:
  *    post:
