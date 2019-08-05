@@ -366,6 +366,12 @@ app.post('/modify_party', authorize, async (req, res) => {
   });
 });
 
+/*
+ * @swagger
+ * /suspend_party:
+ *    post:
+ *      description: takes partyID from body, userID from headers; returns {data: True/null, error: ErrorMsg/null}
+ */
 app.post('/suspend_party', authorize, async (req, res) => {
   const partyID = req.body.party_id;
   const userID = Number.parseInt(req.headers.id);
@@ -380,6 +386,12 @@ app.post('/suspend_party', authorize, async (req, res) => {
   });
 });
 
+/*
+ * @swagger
+ * /invite_to_party:
+ *    post:
+ *      description: takes partyID and guestID from body, userID from headers; returns {data: null/InvitationMsg, error: null/ErrorMsg}
+ */
 app.post('/invite_to_party', authorize, async (req, res) => {
   const partyID = req.body.party_id;
   const userID = Number.parseInt(req.headers.id);
