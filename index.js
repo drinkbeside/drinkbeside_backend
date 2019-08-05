@@ -231,6 +231,26 @@ app.post('/rate', authorize, async (req, res) => {
   });
 });
 
+
+/**
+ * @swagger
+ * /join_party:
+ *    post:
+ *      parameters:
+ *        - name: partyID
+ *          in: body
+ *        - name: userID
+ *          in: headers
+ *      responses:
+ *        200:
+ *          schema:
+ *            type: object
+ *            properties:
+ *              error:
+ *                type: string
+ *              data:
+ *                type: string
+ */
 app.post('/join_party', async (req, res) => {
   const partyID = req.body.partyID;
   const userID = Number.parseInt(req.headers.id);
@@ -245,6 +265,26 @@ app.post('/join_party', async (req, res) => {
   });
 });
 
+
+/**
+ * @swagger
+ * /leave_party:
+ *    post:
+ *      parameters:
+ *        - name: partyID
+ *          in: body
+ *        - name: userID
+ *          in: headers
+ *      responses:
+ *        200:
+ *          schema:
+ *            type: object
+ *            properties:
+ *              error:
+ *                type: string
+ *              data:
+ *                type: string
+ */
 app.post('/leave_party', authorize, async (req, res) => {
   const partyID = req.body.partyID;
   const userID = Number.parseInt(req.headers.id);
@@ -264,6 +304,26 @@ app.post('/places', authorize, async (req, res) => {
   await fetchPlaces(res, req.body.city);
 });
 
+
+/**
+ * @swagger
+ * /search:
+ *    post:
+ *      parameters:
+ *        - name: query
+ *          in: body
+ *        - name: city
+ *          in: body
+ *      responses:
+ *        200:
+ *          schema:
+ *            type: object
+ *            properties:
+ *              error:
+ *                type: string
+ *              data:
+ *                type: string
+ */
 app.post('/search', authorize, async (req, res) => {
   const query = req.body.query;
   const city = req.body.city;
@@ -347,6 +407,28 @@ app.post('/create_party', authorize, async (req, res) => {
   });
 });
 
+
+/**
+ * @swagger
+ * /modify_party:
+ *    post:
+ *      parameters:
+ *        - name: partyID
+ *          in: body
+ *        - name: userID
+ *          in: headers
+ *        - name: fields
+ *          in: body
+ *      responses:
+ *        200:
+ *          schema:
+ *            type: object
+ *            properties:
+ *              error:
+ *                type: string
+ *              data:
+ *                type: string
+ */
 app.post('/modify_party', authorize, async (req, res) => {
   const partyID = req.body.partyID;
   const userID = Number.parseInt(req.headers.id);
@@ -399,11 +481,27 @@ app.post('/suspend_party', authorize, async (req, res) => {
   });
 });
 
+
 /**
  * @swagger
  * /invite_to_party:
  *    post:
- *      description: takes partyID and guestID from body, userID from headers
+ *      parameters:
+ *        - name: partyID
+ *          in: body
+ *        - name: guestID
+ *          in: body
+ *        - name: userID
+ *          in: headers
+ *      responses:
+ *        200:
+ *          schema:
+ *            type: object
+ *            properties:
+ *              error:
+ *                type: string
+ *              data:
+ *                type: string
  */
 app.post('/invite_to_party', authorize, async (req, res) => {
   const partyID = req.body.party_id;
@@ -419,6 +517,7 @@ app.post('/invite_to_party', authorize, async (req, res) => {
     error: null
   });
 });
+
 
 app.get('/guest_list/:pid', authorize, async (req,res) => {
   const partyID = req.params.pid;
@@ -438,6 +537,27 @@ app.get('/guest_list/:pid', authorize, async (req,res) => {
   });
 });
 
+
+
+/**
+ * @swagger
+ * /kick_guest:
+ *    post:
+ *      parameters:
+ *        - name: partyID
+ *          in: body
+ *        - name: userID
+ *          in: headers
+ *      responses:
+ *        200:
+ *          schema:
+ *            type: object
+ *            properties:
+ *              error:
+ *                type: string
+ *              data:
+ *                type: string
+ */
 app.get('/rate_guests/:id', authorize, async (req, res) => {
   const userID = Number.parseInt(req.headers.id);
   const partyID = req.params.id;
@@ -456,6 +576,28 @@ app.get('/rate_guests/:id', authorize, async (req, res) => {
   });
 });
 
+
+/**
+ * @swagger
+ * /kick_guest:
+ *    post:
+ *      parameters:
+ *        - name: partyID
+ *          in: body
+ *        - name: guestID
+ *          in: body
+ *        - name: userID
+ *          in: headers
+ *      responses:
+ *        200:
+ *          schema:
+ *            type: object
+ *            properties:
+ *              error:
+ *                type: string
+ *              data:
+ *                type: string
+ */
 app.post('/kick_guest', authorize, async (req, res) => {
   const partyID = req.body.partyID;
   const userID = Number.parseInt(req.headers.id);
