@@ -370,7 +370,20 @@ app.post('/modify_party', authorize, async (req, res) => {
  * @swagger
  * /suspend_party:
  *    post:
- *      description: takes partyID from body, userID from headers; returns {data: True/null, error: ErrorMsg/null}
+ *      parameters:
+ *        - name: partyID
+ *        in: body
+ *        - name: userID
+ *        in: headers
+ *      responses:
+ *        200:
+ *          schema:
+ *            type: object
+ *            properties:
+ *              error:
+ *                type: string
+ *              data:
+ *                type: string
  */
 app.post('/suspend_party', authorize, async (req, res) => {
   const partyID = req.body.party_id;
@@ -390,7 +403,7 @@ app.post('/suspend_party', authorize, async (req, res) => {
  * @swagger
  * /invite_to_party:
  *    post:
- *      description: takes partyID and guestID from body, userID from headers; returns {data: null/InvitationMsg, error: null/ErrorMsg}
+ *      description: takes partyID and guestID from body, userID from headers
  */
 app.post('/invite_to_party', authorize, async (req, res) => {
   const partyID = req.body.party_id;
