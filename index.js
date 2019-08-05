@@ -539,25 +539,6 @@ app.get('/guest_list/:pid', authorize, async (req,res) => {
 
 
 
-/**
- * @swagger
- * /kick_guest:
- *    post:
- *      parameters:
- *        - name: partyID
- *          in: body
- *        - name: userID
- *          in: headers
- *      responses:
- *        200:
- *          schema:
- *            type: object
- *            properties:
- *              error:
- *                type: string
- *              data:
- *                type: string
- */
 app.get('/rate_guests/:id', authorize, async (req, res) => {
   const userID = Number.parseInt(req.headers.id);
   const partyID = req.params.id;
