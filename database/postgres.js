@@ -379,6 +379,20 @@ module.exports.leaveParty = (pid = null, uid = null) => {
   });
 };
 
+module.exports.updateUserLocation = (uid = null, city = null) => {
+  return new Promise(resolve => {
+    if (!uid || !city) return resolve(null);
+    return pool.connect((err, client, done) => {
+      if (err) return resolve(null);
+      client.query(`UPDATE users SET city = ${city} WHERE id = ${uid}`, (err, result) => {
+        if (err) return resolve(null);
+        done();
+        return resolve(true);
+      })
+    })
+  });
+};
+
 module.exports.declineInvitation = (pid = null, uid = null) => {
   return new Promise(resolve => {
     if (!pid || !uid) return resolve(null);

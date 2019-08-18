@@ -243,8 +243,24 @@ app.post('/leave_party', authorize, async (req, res) => {
     error: null
   });
 });
+
+app.post('/update_user_location', authorize, async (req, res) => {
+  const userID = Number.parseInt(req.headers.id);
+  const city = req.body.city;
+  const done = await updateUserLocation(userID, city);
+  if (!done) return res.json({
+    data: null,
+    error: 'Ошибка изменения города пользователя'
+  });
+  res.json({
+    data: done,
+    error: null
+  });
+});
+
 // end of user related endpoints
 // places related endpoints
+
 app.post('/places', authorize, async (req, res) => {
   await fetchPlaces(res, req.body.city);
 });
