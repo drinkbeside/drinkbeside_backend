@@ -30,9 +30,13 @@ const {
   modifyParty,
   joinParty,
   guestList,
+  guestListPending,
   fetchGuests,
+  fetchGuestsPending,
   kickGuest,
-  leaveParty
+  kickGuestPending,
+  leaveParty,
+  declineInvitation
 } = require('./database/postgres');
 const { fetchPlaces } = require('./middleware/places');
 const { authorize } = require('./middleware/auth');
@@ -114,13 +118,25 @@ app.get('/user/:id', async (req, res) => {
 app.get('/parties', authorize, async (req, res) => {
   const id = Number.parseInt(req.headers.id);
   const parties = await fetchParties(id);
+  const partiesFormatted = await parties.map(async party => {
+    const partyID = party.id;
+    const list = await guestList(partyID, id);
+    const listPending = await guestListPending(partyID, id);
+    return {
+      ...party,
+      guests: list.length,
+      pending_guests: listPending.length
+    };
+  });
   if(!parties) return res.json({
     data: null,
     error: 'Ошибка подбора событий, попробуйте позже'
   });
-  res.json({
-    data: parties,
-    error: null
+  Promise.all(partiesFormatted).then(result => {
+    res.json({
+      data: result,
+      error: null
+    });
   });
 });
 
@@ -320,7 +336,12 @@ app.post('/create_party', authorize, async (req, res) => {
   if(!party) return res.json({
     data: null,
     error: 'Невозможно создать событие'
-  })
+  });
+  done = await joinParty(party.id, Number.parseInt(req.headers.id));
+  if (!done) return res.json({
+    data: null,
+    error: 'Ошибка создания тусовки'
+  });
   res.json({
     data: party,
     error: null
@@ -379,12 +400,16 @@ app.get('/guest_list/:pid', authorize, async (req,res) => {
   const partyID = req.params.pid;
   const userID = Number.parseInt(req.headers.id);
   const list = await fetchGuests(partyID, userID);
+  const listPending = await fetchGuestsPending(partyID, userID);
   if (!list) return res.json({
     data: null,
     error: 'Ошибка получения списка участников'
   });
   res.json({
-    data: list,
+    data: {
+      going: list,
+      pending: listPending
+    },
     error: null
   });
 });
