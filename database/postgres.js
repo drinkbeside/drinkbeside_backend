@@ -180,10 +180,47 @@ module.exports.friendsByID = (id = null) => {
     if (!id) return resolve(null);
     return pool.connect((err, client, done) => {
       if (err) return resolve(null);
-      client.query(`SELECT friend_id FROM friends WHERE user_id = ${id}`, (err, result) => {
+      client.query(`SELECT * FROM users WHERE id IN (SELECT friend_id FROM friends WHERE user_id = ${id})`, (err, result) => {
         done();
         if (err) return resolve(null);
         return resolve(result.rows);
+      });
+    });
+  });
+};
+
+module.exports.addFriend = (uid = null, id = null) => {
+  return new Promise(resolve => {
+    if (!id || !uid) return resolve(null);
+    return pool.connect((err, client, done) => {
+      if (err) return resolve(null);
+      client.query(`SELECT friend_id FROM friends WHERE user_id = ${uid}`, (err, result) => {
+        if (!err) return resolve(null);
+        client.query(`INSERT INTO friends(user_id, friend_id) VALUES(${uid}, ${id})`, (err, result) => {
+          if (err) return resolve(null);
+          client.query(`SELECT * FROM users WHERE id = ${id}`, (err, result) => {
+            done();
+            if (err) return resolve(null);
+            return resolve(result.rows);
+          });
+        });
+      });
+    });
+  });
+};
+
+module.exports.removeFriend = (uid = null, id = null) => {
+  return new Promise(resolve => {
+    if (!id || !uid) return resolve(null);
+    return pool.connect((err, client, done) => {
+      if (err) return resolve(null);
+      client.query(`SELECT friend_id FROM friends WHERE user_id = ${uid}`, (err, result) => {
+        if (!err) return resolve(null);
+        client.query(`DELETE FROM friends WHERE user_id = ${uid} AND friend_id = ${id}`, (err, result) => {
+          done();
+          if (err) return resolve(null);
+          return resolve(result.rows);
+        });
       });
     });
   });

@@ -1,5 +1,5 @@
 const axios = require('axios');
-const asyncRedis = require("async-redis");
+const asyncRedis = require('async-redis');
 const redis = asyncRedis.createClient();
 
 const fetchPlaces = async (res, city = 'spb', places = [], page = 1, lang = 'ru') => {
@@ -11,6 +11,7 @@ const fetchPlaces = async (res, city = 'spb', places = [], page = 1, lang = 'ru'
   });
   // in case there is no cache
   const url = `https://kudago.com/public-api/v1.4/places/?lang=${lang}&page=${page}&page_size=100&fields=${'title,address,location,timetable,phone,description,coords,subway'}&text_format=text&location=${city}&categories=bar,bar-s-zhivoj-muzykoj,cafe,clubs,fastfood,restaurants`;
+  console.log(url);
   let updatedPlaces = [];
   let response;
   try {

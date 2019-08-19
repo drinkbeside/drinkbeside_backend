@@ -36,10 +36,14 @@ const {
   kickGuest,
   kickGuestPending,
   leaveParty,
-  declineInvitation
+  declineInvitation,
+  friendsByID,
+  addFriend,
+  removeFriend
 } = require('./database/postgres');
 const { fetchPlaces } = require('./middleware/places');
 const { authorize } = require('./middleware/auth');
+const { decode } = require('./middleware/citydecoder');
 // express application configuration
 app.use(cors());
 app.use(bodyparser.json({limit: '50mb', extended: true}));
@@ -140,18 +144,46 @@ app.get('/parties', authorize, async (req, res) => {
   });
 });
 
-// app.get('/friends/:id', authorize, async (req, res) => {
-//   const id = req.params.id;
-//   const friends = await fetchFriends(id);
-//   if(!friends) return res.json({
-//     data: null,
-//     error: 'Ошибка подбора друзей, попробуйте позже'
-//   });
-//   res.json({
-//     data: friends,
-//     error: null
-//   });
-// });
+app.get('/friends/:id', authorize, async (req, res) => {
+  const id = req.params.id;
+  const friends = await fetchFriends(id);
+  if(!friends) return res.json({
+    data: null,
+    error: 'Ошибка подбора друзей, попробуйте позже'
+  });
+  res.json({
+    data: friends,
+    error: null
+  });
+});
+
+app.post('/friends/add/:id', authorize, async (req, res) => {
+  const uid = req.headers.id;
+  const id = req.params.id;
+  const added = await addFriend(uid, id);
+  if(!added) return res.json({
+    data: null,
+    error: 'Ошибка добавления в друзья, попробуйте позже'
+  });
+  res.json({
+    data: true,
+    error: null
+  });
+});
+
+app.post('/friends/remove/:id', authorize, async (req, res) => {
+  const uid = req.headers.id;
+  const id = req.params.id;
+  const added = await removeFriend(uid, id);
+  if(!added) return res.json({
+    data: null,
+    error: 'Ошибка удаления из друзей, попробуйте позже'
+  });
+  res.json({
+    data: true,
+    error: null
+  });
+});
 
 app.post('/update_user_info', authorize, async (req, res) => {
   const data = req.body;
