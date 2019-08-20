@@ -104,6 +104,27 @@ app.post('/confirm_code', async (req, res) => {
   });
 });
 
+app.post('/app_invite', authorize, async (req, res) => {
+  const phone = req.body.phoneNumber;
+  const invitation = process.env.INVITATION_MESSAGE_TEMPLATE;
+    .replace('<invitation_text>', process.env.INVITATION_MESSAGE_TEXT_RU);
+  const toSend = process.env.DEF_URL
+    .replace('<phones>', phone)
+    .replace('<message>', invitation);
+  try {
+    const response = await axios.get(toSend);
+    res.json({
+      error: null,
+      data: 'Приглашение отправлено'
+    });
+  } catch (e) {
+    res.status(500).json({
+      error: 'Ошибка отправки приглашения',
+      data: null
+    });
+  }
+});
+
 app.post('/refresh', async (req, res) => {
   const refresher = req.headers.refresh;
   return await jwt.verify(refresher, process.env.SECRET, async (err, decoded) => {
