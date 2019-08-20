@@ -351,7 +351,8 @@ app.post('/rate', authorize, async (req, res) => {
 
 app.post('/join_party', authorize, async (req, res) => {
   const partyID = req.body.partyID;
-  const userID = Number.parseInt(req.headers.id);
+  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const userID = Number.parseInt(user.id);
   done = await joinParty(partyID, userID);
   if (!done) return res.status(500).json({
     data: null,
@@ -365,7 +366,8 @@ app.post('/join_party', authorize, async (req, res) => {
 
 app.post('/leave_party', authorize, async (req, res) => {
   const partyID = req.body.partyID;
-  const userID = Number.parseInt(req.headers.id);
+  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const userID = Number.parseInt(user.id);
   const done = await leaveParty(partyID, userID);
   if (!done) return res.status(500).json({
     data: null,
