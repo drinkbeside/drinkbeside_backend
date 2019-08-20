@@ -216,6 +216,36 @@ app.post('/friends/add/:id', authorize, async (req, res) => {
   });
 });
 
+app.post('/friends/confirm/:id', authorize, async (req, res) => {
+  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const uid = user.id;
+  const id = req.params.id;
+  const added = await confirmFriend(uid, id);
+  if(!added) return res.status(500).json({
+    data: null,
+    error: 'Ошибка добавления в друзья, попробуйте позже'
+  });
+  res.json({
+    data: true,
+    error: null
+  });
+});
+
+app.post('/friends/decline/:id', authorize, async (req, res) => {
+  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const uid = user.id;
+  const id = req.params.id;
+  const added = await declineFriend(uid, id);
+  if(!added) return res.status(500).json({
+    data: null,
+    error: 'Ошибка добавления в друзья, попробуйте позже'
+  });
+  res.json({
+    data: true,
+    error: null
+  });
+});
+
 app.post('/friends/remove/:id', authorize, async (req, res) => {
   const user = await jwt.verify(req.headers.access, process.env.SECRET);
   const uid = user.id;
