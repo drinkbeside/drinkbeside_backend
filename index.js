@@ -109,6 +109,18 @@ app.post('/app_invite', async (req, res) => {
   const toSend = process.env.DEF_URL
     .replace('<phones>', phone)
     .replace('<message>', invitation);
+  try {
+    const response = await axios.get(toSend);
+    res.json({
+      error: null,
+      data: 'Приглашение отправлено'
+    });
+  } catch (e) {
+    res.status(500).json({
+      error: 'Ошибка отправки приглашения',
+      data: null
+    });
+  }
 });
 
 app.post('/refresh', async (req, res) => {
