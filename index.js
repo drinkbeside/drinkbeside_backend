@@ -102,6 +102,15 @@ app.post('/confirm_code', async (req, res) => {
   });
 });
 
+app.post('/app_invite', async (req, res) => {
+  const phone = req.body.phoneNumber;
+  const invitation = process.env.INVITATION_MESSAGE_TEMPLATE;
+    .replace('<invitation_text>', process.env.INVITATION_MESSAGE_TEXT_RU);
+  const toSend = process.env.DEF_URL
+    .replace('<phones>', phone)
+    .replace('<message>', invitation);
+});
+
 app.post('/refresh', async (req, res) => {
   const refresher = req.headers.refresh;
   return await jwt.verify(refresher, process.env.SECRET, async (err, decoded) => {
