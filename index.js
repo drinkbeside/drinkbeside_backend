@@ -40,7 +40,9 @@ const {
   declineInvitation,
   friendsByID,
   addFriend,
-  removeFriend
+  removeFriend,
+  confirmFriend,
+  declineFriend
 } = require('./database/postgres');
 const { fetchPlaces } = require('./middleware/places');
 const { authorize } = require('./middleware/auth');

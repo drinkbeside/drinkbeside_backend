@@ -237,7 +237,7 @@ module.exports.confirmFriend = (uid = null, id = null) => {
     return pool.connect((err, client, done) => {
       if (err) return resolve(null);
       client.query(`SELECT user_id FROM friends_pending WHERE friend_id = ${uid}`, (err, result) => {
-        if (!err) return resolve(null);
+        if (err) return resolve(null);
         client.query(`INSERT INTO friends(user_id, friend_id) VALUES(${id}, ${uid})`, (err, result) => {
           if (err) return resolve(null);
           client.query(`DELETE FROM friends_pending WHERE user_id = ${id} AND friend_id = ${uid}`, (err, result) => {
@@ -247,6 +247,26 @@ module.exports.confirmFriend = (uid = null, id = null) => {
               if (err) return resolve(null);
               return resolve(result.rows);
             });
+          });
+        });
+      });
+    });
+  });
+};
+
+module.exports.declineFriend = (uid = null, id = null) => {
+  return new Promise(resolve => {
+    if (!id || !uid) return resolve(null);
+    return pool.connect((err, client, done) => {
+      if (err) return resolve(null);
+      client.query(`SELECT user_id FROM friends_pending WHERE friend_id = ${uid}`, (err, result) => {
+        if (err) return resolve(null);
+        client.query(`DELETE FROM friends_pending WHERE user_id = ${id} AND friend_id = ${uid}`, (err, result) => {
+          if (err) return resolve(null);
+          client.query(`SELECT * FROM users WHERE id = ${id}`, (err, result) => {
+            done();
+            if (err) return resolve(null);
+            return resolve(result.rows);
           });
         });
       });
