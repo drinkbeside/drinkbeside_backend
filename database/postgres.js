@@ -50,6 +50,27 @@ module.exports.userByID = (id = null) => {
   });
 };
 
+module.exports.userByInput = (input = null) => {
+  return new Promise(resolve => {
+    if(!input) return resolve(null);
+    const parsed = Number.parseInt(input) || null;
+    if(!parsed) return resolve(null);
+    return pool.connect((err, client, done) => {
+      if(err) return resolve(null);
+      client.query(`SELECT * FROM users WHERE id = ${parsed} OR phone = ${'' + resu}`, async (err, result) => {
+        done();
+        if(err) return resolve(null);
+        const user = result.rows[0];
+        const rating = await self.ratingByID(user.id);
+        return resolve({
+          ...user,
+          rating: rating
+        });
+      });
+    });
+  });
+};
+
 module.exports.ratingByID = (id = null) => {
   return new Promise(resolve => {
     if (!id) return resolve(null);

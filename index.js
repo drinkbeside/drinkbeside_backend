@@ -18,6 +18,7 @@ const upload = multer();
 const {
   userByID,
   userByPhone,
+  userByInput,
   saveUser,
   updateUserInfo,
   updateRating,
@@ -130,6 +131,22 @@ app.post('/refresh', async (req, res) => {
 });
 // end of sign up & sign in endpoints
 // user related endpoints
+app.get('/seek', async (req, res) => {
+  const query = req.query.input;
+  const user = await userByInput(query);
+  if(!user) return res.status(404).json({
+    error: `Невозможно найти пользователя по ${query}`,
+    data: null
+  });
+  res.json({
+    error: null,
+    data: {
+      ...user
+    }
+  });
+});
+
+
 app.get('/user/:id', async (req, res) => {
   const id = Number.parseInt(req.params.id);
   const user = await userByID(id);
@@ -140,8 +157,7 @@ app.get('/user/:id', async (req, res) => {
   res.json({
     error: null,
     data: {
-      ...user,
-      token: await redis.get(user.id)
+      ...user
     }
   });
 });
