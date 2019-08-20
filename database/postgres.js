@@ -142,14 +142,14 @@ module.exports.updateAvatar = (id = null, path = null) => {
 };
 
 module.exports.createParty = ({
-  hostID, invitedIDs, name, isFree,
+  hostID, invitedIDs, name,
   minPrice, maxPrice, address, type,
   start, end, minRating, limit
 }) => {
   return new Promise(resolve => {
     return pool.connect((err, client, done) => {
       if (err) return resolve(null);
-      client.query(`INSERT INTO parties(name, host_id, is_free, min_price, max_price, location, start_time, end_time, min_rating, type, invite_limit) VALUES('${name}', ${Number.parseInt(hostID)}, ${isFree}, ${Number.parseInt(minPrice)}, ${Number.parseInt(maxPrice)}, '${address}', ${Number.parseFloat(start)}, ${Number.parseFloat(end)}, ${Number.parseFloat(minRating)}, ${Number.parseInt(type)}, ${Number.parseInt(limit)}) RETURNING *`, (err, result) => {
+      client.query(`INSERT INTO parties(name, host_id, min_price, max_price, location, start_time, end_time, min_rating, type, invite_limit) VALUES('${name}', ${Number.parseInt(hostID)}, ${Number.parseInt(minPrice)}, ${Number.parseInt(maxPrice)}, '${address}', ${Number.parseFloat(start)}, ${Number.parseFloat(end)}, ${Number.parseFloat(minRating)}, ${Number.parseInt(type)}, ${Number.parseInt(limit)}) RETURNING *`, (err, result) => {
         if (err) return resolve(null);
         const party = result.rows[0];
         if (invitedIDs.length > 1) {
@@ -182,15 +182,23 @@ module.exports.partyByID = (id = null) => {
   });
 };
 
-module.exports.fetchParties = (id = null) => {
+module.exports.fetchParties = (id = null, stime, etime, minamnt, maxamnt) => {
   return new Promise(resolve => {
     if (!id) return resolve(null);
     return pool.connect((err, client, done) => {
       if (err) return resolve(null);
-      client.query(`SELECT * FROM parties WHERE id IN (SELECT party_id FROM party_guests WHERE guest_id = ${id})`, (err, result) => {
-        done();
+      client.query(`SELECT * FROM parties WHERE id IN (SELECT party_id FROM party_guests WHERE guest_id = ${id}) OR type = 0`, (err, result) => {
         if (err) return resolve(null);
-        return resolve(result.rows);
+        const parties = result.rows;
+        client.query(`SELECT guest_id FROM party_guests WHERE party_id IN (${parties.join(',')}) GROUP BY party_id`, (err, result) => {
+          done();
+          if(err) return resolve(null);
+          let queriedParties = parties;
+          if(stime) queriedParties = parties.filter(party => party.start_time >= stime);
+          if(etime) queriedParties = queriedParties.filter(party => party.end_time <= etime);
+
+          return resolve(result.rows);
+        });
       });
     });
   });

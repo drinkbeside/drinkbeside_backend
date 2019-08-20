@@ -188,7 +188,17 @@ app.get('/user/:id', authorize, async (req, res) => {
 app.get('/parties', authorize, async (req, res) => {
   const user = await jwt.verify(req.headers.access, process.env.SECRET);
   const id = user.id;
-  const parties = await fetchParties(id);
+  const startTime = req.params.start_time || null;
+  const endTime = req.params.end_time || null;
+  const guestMinAmount = req.params.min_amount || null;
+  const guestMaxAmount = req.params.max_amount || null;
+  const parties = await fetchParties(
+    id,
+    startTime,
+    endTime,
+    guestMinAmount,
+    guestMaxAmount
+  );
   const partiesFormatted = await parties.map(async party => {
     const partyID = party.id;
     const list = await guestList(partyID, id);
@@ -453,7 +463,6 @@ app.post('/create_party', authorize, async (req, res) => {
   const hostID = req.body.hostID;
   const invitedIDs = req.body.invitedIDs || [];
   const name = req.body.name;
-  const isFree = req.body.isFree;
   const minPrice = req.body.minPrice || 0;
   const maxPrice = req.body.maxPrice || 0;
   const address = req.body.address;
@@ -462,12 +471,12 @@ app.post('/create_party', authorize, async (req, res) => {
   const end = req.body.end || 0;
   const minRating = req.body.minRating || 0.0;
   const limit = req.body.limit || 0;
-  if (!hostID || !name || !isFree || !address || !start) return res.json({
+  if (!hostID || !name || !address || !start) return res.json({
     data: null,
     error: 'Указаны не все обязательные поля'
   });
   const party = await createParty({
-    hostID, invitedIDs, name, isFree,
+    hostID, invitedIDs, name,
     minPrice, maxPrice, address, type,
     start, end, minRating, limit
   });
