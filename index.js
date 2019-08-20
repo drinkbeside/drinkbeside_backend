@@ -67,7 +67,7 @@ app.post('/send_code', async (req, res) => {
       data: 'Code sent'
     });
   } catch (e) {
-    res.json({
+    res.status(500).json({
       error: 'Ошибка отправки проверочного кода',
       data: null
     });
@@ -85,20 +85,47 @@ app.post('/confirm_code', async (req, res) => {
     };
     if (user) {
       await redis.del(phone);
-      const token = jwt.sign({ user }, process.env.SECRET);
-      await redis.set(user.id, token);
+      const access = jwt.sign({ user }, process.env.SECRET, { expiresIn: '20m' });
+      const refresh = jwt.sign({ access }, process.env.SECRET, { expiresIn: '1w' });
+      await redis.set(access, user);
+      await redis.set(refresh, access);
       return res.json({
         error: null,
-        data: {
-          ...user,
-          token: token
-        }
+        data: { ...user, access, refresh }
       });
     }
   }
-  res.json({
+  res.status(400).json({
     error: 'Вы прислали неверный код',
     data: null
+  });
+});
+
+app.post('/refresh', async (req, res) => {
+  const refresher = req.headers.refresh;
+  return await jwt.verify(refresher, process.env.SECRET, async (err, decoded) => {
+    if(err || decoded.expired) return res.status(401).json({
+      error: 'Время жизни токена исчерпано',
+      data: null
+    });
+    const token = await redis.get(refresher);
+    if(!token) return res.status(403).json({
+      error: 'Неверный токен',
+      data: null
+    });
+    return await jwt.verify(token, process.env.SECRET, async (err, decoded) => {
+      await redis.del(refresher);
+      await redis.del(token);
+      const user = decoded;
+      const access = jwt.sign({ user }, process.env.SECRET, { expiresIn: '20m' });
+      const refresh = jwt.sign({ access }, process.env.SECRET, { expiresIn: '1w' });
+      await redis.set(access, user);
+      await redis.set(refresh, access);
+      return res.json({
+        error: null,
+        data: { ...user, access, refresh }
+      });
+    });
   });
 });
 // end of sign up & sign in endpoints
@@ -106,7 +133,7 @@ app.post('/confirm_code', async (req, res) => {
 app.get('/user/:id', async (req, res) => {
   const id = Number.parseInt(req.params.id);
   const user = await userByID(id);
-  if (!user) return res.json({
+  if (!user) return res.status(404).json({
     error: `Невозможно найти пользователя с ID ${id}`,
     data: null
   });
@@ -120,7 +147,8 @@ app.get('/user/:id', async (req, res) => {
 });
 
 app.get('/parties', authorize, async (req, res) => {
-  const id = Number.parseInt(req.headers.id);
+  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const id = user.id;
   const parties = await fetchParties(id);
   const partiesFormatted = await parties.map(async party => {
     const partyID = party.id;
@@ -132,7 +160,7 @@ app.get('/parties', authorize, async (req, res) => {
       pending_guests: listPending.length
     };
   });
-  if(!parties) return res.json({
+  if(!parties) return res.status(500).json({
     data: null,
     error: 'Ошибка подбора событий, попробуйте позже'
   });
@@ -147,7 +175,7 @@ app.get('/parties', authorize, async (req, res) => {
 app.get('/friends/:id', authorize, async (req, res) => {
   const id = req.params.id;
   const friends = await fetchFriends(id);
-  if(!friends) return res.json({
+  if(!friends) return res.status(500).json({
     data: null,
     error: 'Ошибка подбора друзей, попробуйте позже'
   });
@@ -158,10 +186,11 @@ app.get('/friends/:id', authorize, async (req, res) => {
 });
 
 app.post('/friends/add/:id', authorize, async (req, res) => {
-  const uid = req.headers.id;
+  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const uid = user.id;
   const id = req.params.id;
   const added = await addFriend(uid, id);
-  if(!added) return res.json({
+  if(!added) return res.status(500).json({
     data: null,
     error: 'Ошибка добавления в друзья, попробуйте позже'
   });
@@ -172,10 +201,11 @@ app.post('/friends/add/:id', authorize, async (req, res) => {
 });
 
 app.post('/friends/remove/:id', authorize, async (req, res) => {
-  const uid = req.headers.id;
+  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const uid = user.id;
   const id = req.params.id;
   const added = await removeFriend(uid, id);
-  if(!added) return res.json({
+  if(!added) return res.status(500).json({
     data: null,
     error: 'Ошибка удаления из друзей, попробуйте позже'
   });
@@ -200,20 +230,21 @@ app.post('/update_user_info', authorize, async (req, res) => {
       data: updatedUser
     });
   }
-  res.json({
+  res.status(500).json({
     error: 'Ошибка обновления данных пользователя',
     data: null
   });
 });
 
-app.post('/update_avatar', authorize, upload.single('image'), async (req, res, next) => {
-  const id = Number.parseInt(req.headers.id);
+app.post('/update_avatar', authorize, upload.single('image'), async (req, res) => {
+  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const id = user.id;
   const image = req.file.buffer;
   const path = `images/avatars/id_${id}.png`;
   try {
     fs.writeFileSync(`public/${path}`, image);
   } catch (e) {
-    return res.json({
+    return res.status(500).json({
       error: 'Ошибка сохранения аватара, попробуйте заново',
       data: null
     });
@@ -223,27 +254,28 @@ app.post('/update_avatar', authorize, upload.single('image'), async (req, res, n
     error: null,
     data: updatedUser
   });
-  res.json({
+  res.status(500).json({
     error: 'Ошибка загрузки, попробуйте заново',
     data: null
   });
 });
 
 app.post('/rate', authorize, async (req, res) => {
-  const userID = Number.parseInt(req.headers.id);
+  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const userID = user.id;
   const guestID = req.body.guest_id;
   const rating = Number.parseInt(req.body.rating);
-  if(!guestID || !rating) return res.json({
+  if(!guestID || !rating) return res.status(400).json({
     data: null,
     error: 'Переданы не все необходимые параметры'
   });
-  const user = await updateRating(guestID, userID, rating);
-  if(!user) return res.json({
+  const updatedUser = await updateRating(guestID, userID, rating);
+  if(!updatedUser) return res.status(500).json({
     data: null,
     error: 'Невозможно поставить оценку пользователю'
   });
   res.json({
-    data: `Рейтинг пользователя ${user.fname} ${user.lname} обновлен`,
+    data: `Рейтинг пользователя ${updatedUser.fname} ${updatedUser.lname} обновлен`,
     error: null
   });
 });
@@ -252,7 +284,7 @@ app.post('/join_party', async (req, res) => {
   const partyID = req.body.partyID;
   const userID = Number.parseInt(req.headers.id);
   done = await joinParty(partyID, userID);
-  if (!done) return res.json({
+  if (!done) return res.status(500).json({
     data: null,
     error: 'Ошибка присоединения'
   });
@@ -266,7 +298,7 @@ app.post('/leave_party', authorize, async (req, res) => {
   const partyID = req.body.partyID;
   const userID = Number.parseInt(req.headers.id);
   const done = await leaveParty(partyID, userID);
-  if (!done) return res.json({
+  if (!done) return res.status(500).json({
     data: null,
     error: 'Ошибка исключения пользователя'
   });
@@ -277,10 +309,11 @@ app.post('/leave_party', authorize, async (req, res) => {
 });
 
 app.post('/update_user_location', authorize, async (req, res) => {
-  const userID = Number.parseInt(req.headers.id);
+  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const userID = user.id;
   const city = req.body.city;
   const done = await updateUserLocation(userID, city);
-  if (!done) return res.json({
+  if (!done) return res.status(500).json({
     data: null,
     error: 'Ошибка изменения города пользователя'
   });
@@ -317,7 +350,7 @@ app.post('/search', authorize, async (req, res) => {
     }]
   }
   const data = await redis.get(city);
-  if (!data) return res.json({
+  if (!data) return res.status(500).json({
     data: null,
     error: 'Ошибка на стороне сервера, попробуйте позже'
   });
@@ -333,7 +366,7 @@ app.post('/search', authorize, async (req, res) => {
 app.get('/party/:id', authorize, async (req, res) => {
   const id = req.params.id;
   const party = await partyByID(id);
-  if (!party) return res.json({
+  if (!party) return res.status(404).json({
     data: null,
     error: 'Данного события не существует'
   });
@@ -344,6 +377,8 @@ app.get('/party/:id', authorize, async (req, res) => {
 });
 
 app.post('/create_party', authorize, async (req, res) => {
+  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const uid = user.id;
   const hostID = req.body.hostID;
   const invitedIDs = req.body.invitedIDs || [];
   const name = req.body.name;
@@ -365,12 +400,12 @@ app.post('/create_party', authorize, async (req, res) => {
     minPrice, maxPrice, address, type,
     start, end, minRating, limit
   });
-  if(!party) return res.json({
+  if(!party) return res.status(500).json({
     data: null,
     error: 'Невозможно создать событие'
   });
-  done = await joinParty(party.id, Number.parseInt(req.headers.id));
-  if (!done) return res.json({
+  done = await joinParty(party.id, uid);
+  if (!done) return res.status(500).json({
     data: null,
     error: 'Ошибка создания тусовки'
   });
@@ -382,14 +417,15 @@ app.post('/create_party', authorize, async (req, res) => {
 
 app.post('/modify_party', authorize, async (req, res) => {
   const partyID = req.body.partyID;
-  const userID = Number.parseInt(req.headers.id);
+  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const userID = user.id;
   const fields = req.body.fields;
   const updateQueryArray = Object.keys(fields)
     .filter(key => !(key in ['id', 'host_id', 'is_suspended']))
     .map(key => `${key} = '${fields[key]}'`)
     .join(',');
   const done = await modifyParty(partyID, userID, updateQueryArray);
-  if (!done) return res.json({
+  if (!done) return res.status(500).json({
     data: null,
     error: 'Ошибка изменения параметров события'
   });
@@ -401,9 +437,10 @@ app.post('/modify_party', authorize, async (req, res) => {
 
 app.post('/suspend_party', authorize, async (req, res) => {
   const partyID = req.body.party_id;
-  const userID = Number.parseInt(req.headers.id);
+  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const userID = user.id;
   const done = await suspendParty(partyID, userID);
-  if (!done) return res.json({
+  if (!done) return res.status(500).json({
     data: null,
     error: 'Ошибка приостановки события.'
   });
@@ -415,25 +452,27 @@ app.post('/suspend_party', authorize, async (req, res) => {
 
 app.post('/invite_to_party', authorize, async (req, res) => {
   const partyID = req.body.party_id;
-  const userID = Number.parseInt(req.headers.id);
+  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const userID = user.id;
   const guestID = req.body.guest_id;
-  const { done, party, user } = await inviteToParty(partyID, userID, guestID);
-  if (!done) return res.json({
+  const { done, party, updatedUser } = await inviteToParty(partyID, userID, guestID);
+  if (!done) return res.status(500).json({
     data: null,
     error: 'Ошибка на стороне сервера, либо вы не хост события'
   });
   res.json({
-    data: `Вы пригласили ${user.name} на ${party.name}`,
+    data: `Вы пригласили ${updatedUser.name} на ${party.name}`,
     error: null
   });
 });
 
 app.get('/guest_list/:pid', authorize, async (req,res) => {
   const partyID = req.params.pid;
-  const userID = Number.parseInt(req.headers.id);
+  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const userID = user.id;
   const list = await fetchGuests(partyID, userID);
   const listPending = await fetchGuestsPending(partyID, userID);
-  if (!list) return res.json({
+  if (!list) return res.status(403).json({
     data: null,
     error: 'Ошибка получения списка участников'
   });
@@ -447,14 +486,15 @@ app.get('/guest_list/:pid', authorize, async (req,res) => {
 });
 
 app.get('/rate_guests/:id', authorize, async (req, res) => {
-  const userID = Number.parseInt(req.headers.id);
+  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const userID = user.id;
   const partyID = req.params.id;
   if(!userID || !partyID) return res.json({
     data: null,
     error: 'Переданы не все необходимые параметры'
   });
   const guests = await fetchGuests(userID, partyID);
-  if(!guests) return res.json({
+  if(!guests) return res.status(403).json({
     data: null,
     error: 'Скорее всего Вы не являетесь хостом события, либо события не существует'
   });
@@ -466,10 +506,11 @@ app.get('/rate_guests/:id', authorize, async (req, res) => {
 
 app.post('/kick_guest', authorize, async (req, res) => {
   const partyID = req.body.partyID;
-  const userID = Number.parseInt(req.headers.id);
+  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const userID = user.id;
   const guestID = req.body.guestID;
   const done = await kickGuest(partyID, userID, guestID);
-  if (!done) return res.json({
+  if (!done) return res.status(500).json({
     data: null,
     error: 'Ошибка исключения пользователя'
   });
