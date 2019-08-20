@@ -349,7 +349,7 @@ app.post('/rate', authorize, async (req, res) => {
   });
 });
 
-app.post('/join_party', authorize async (req, res) => {
+app.post('/join_party', authorize, async (req, res) => {
   const partyID = req.body.partyID;
   const userID = Number.parseInt(req.headers.id);
   done = await joinParty(partyID, userID);
