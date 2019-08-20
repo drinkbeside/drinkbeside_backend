@@ -133,7 +133,7 @@ app.post('/refresh', async (req, res) => {
 });
 // end of sign up & sign in endpoints
 // user related endpoints
-app.get('/seek', async (req, res) => {
+app.get('/seek', authorize, async (req, res) => {
   const query = req.query.input;
   const user = await userByInput(query);
   if(!user) return res.status(404).json({
@@ -149,7 +149,7 @@ app.get('/seek', async (req, res) => {
 });
 
 
-app.get('/user/:id', async (req, res) => {
+app.get('/user/:id', authorize, async (req, res) => {
   const id = Number.parseInt(req.params.id);
   const user = await userByID(id);
   if (!user) return res.status(404).json({
@@ -328,7 +328,7 @@ app.post('/rate', authorize, async (req, res) => {
   });
 });
 
-app.post('/join_party', async (req, res) => {
+app.post('/join_party', authorize async (req, res) => {
   const partyID = req.body.partyID;
   const userID = Number.parseInt(req.headers.id);
   done = await joinParty(partyID, userID);
