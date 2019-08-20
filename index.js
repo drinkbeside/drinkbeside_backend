@@ -10,6 +10,7 @@ const axios = require('axios');
 const fs = require('fs');
 const multer = require('multer');
 const jwt = require('jsonwebtoken');
+const distance = require('google-distance');
 // system consts
 const app = express();
 const redis = asyncRedis.createClient();
