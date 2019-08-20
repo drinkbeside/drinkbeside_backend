@@ -67,7 +67,7 @@ app.post('/send_code', async (req, res) => {
     const response = await axios.get(toSend);
     res.json({
       error: null,
-      data: 'Code sent'
+      data: 'Код отправлен'
     });
   } catch (e) {
     res.status(500).json({
