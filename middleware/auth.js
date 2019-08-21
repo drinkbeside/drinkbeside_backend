@@ -10,7 +10,7 @@ module.exports.authorize = async (req, res, next) => {
       error: 'Ошибка доступа по токену, токен истек',
       data: null
     });
-    const user = await redis.get(access);
+    const user = await redis.get(token);
     if(decoded.phone !== user.phone || decoded.expired) return res.status(401).json({
       error: 'Ошибка доступа по токену, вы должны быть авторизованы',
       data: null
