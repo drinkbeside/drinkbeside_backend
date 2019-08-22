@@ -1,21 +1,23 @@
 // to keep consts away from file
-require('dotenv').config();
+import * as dotenv from 'dotenv';
+dotenv.config();
 // libraries
-const fusejs = require('fuse.js')
-const express = require('express');
-const cors = require('cors');
-const bodyparser = require('body-parser');
-const asyncRedis = require("async-redis");
-const axios = require('axios');
-const fs = require('fs');
-const multer = require('multer');
-const jwt = require('jsonwebtoken');
+import fusejs from 'fuse.js';
+import express from 'express'
+import cors from 'cors';
+import bodyparser from 'body-parser';
+import asyncRedis from 'async-redis';
+import axios from 'axios';
+import fs from 'fs';
+import multer from 'multer';
+import jwt from 'jsonwebtoken';
 // system consts
 const app = express();
 const redis = asyncRedis.createClient();
 const upload = multer();
+const config = process.env;
 // custom functions
-const {
+import {
   userByID,
   userByPhone,
   userByInput,
@@ -43,10 +45,10 @@ const {
   removeFriend,
   confirmFriend,
   declineFriend
-} = require('./database/postgres');
-const { fetchPlaces } = require('./middleware/places');
-const { authorize } = require('./middleware/auth');
-const { decode } = require('./middleware/citydecoder');
+} from './database/postgres';
+import { fetchPlaces } from './middleware/places';
+import { authorize } from './middleware/auth';
+import { decode } from './middleware/citydecoder';
 // express application configuration
 app.use(cors());
 app.use(bodyparser.json({limit: '50mb', extended: true}));
@@ -59,8 +61,8 @@ app.post('/send_code', async (req, res) => {
   await redis.set(phone.replace('+', ''), random);
   setTimeout(() => {
     redis.del(phone.replace('+', ''));
-  }, process.env.SMS_TIMEOUT);
-  const toSend = process.env.DEF_URL
+  }, config.SMS_TIMEOUT);
+  const toSend = config.DEF_URL
     .replace('<phones>', phone)
     .replace('<message>', random);
   try {
@@ -81,34 +83,34 @@ app.post('/confirm_code', async (req, res) => {
   const phone = req.body.phoneNumber.replace('+', '');
   const code = req.body.code;
   const codeKept = await redis.get(phone);
-  if (codeKept && codeKept === code) {
-    let user = await userByPhone(phone);
-    if (!user) {
-      user = await saveUser(phone);
-    };
-    if (user) {
-      await redis.del(phone);
-      const access = jwt.sign({ user }, process.env.SECRET, { expiresIn: '20m' });
-      const refresh = jwt.sign({ access }, process.env.SECRET, { expiresIn: '1w' });
-      await redis.set(access, user);
-      await redis.set(refresh, access);
-      return res.json({
-        error: null,
-        data: { ...user, access, refresh }
-      });
-    }
-  }
-  res.status(400).json({
+  if (!codeKept || codeKept !== code) return res.status(400).json({
     error: 'Вы прислали неверный код',
+    data: null
+  });
+  let user = await userByPhone(phone);
+  if (!user) user = await saveUser(phone);
+  if (user) {
+    await redis.del(phone);
+    const access = jwt.sign({ user }, config.SECRET, { expiresIn: '20m' });
+    const refresh = jwt.sign({ access }, config.SECRET, { expiresIn: '1w' });
+    await redis.set(access, user);
+    await redis.set(refresh, access);
+    return res.json({
+      error: null,
+      data: { ...user, access, refresh }
+    });
+  }
+  res.status(500).json({
+    error: 'Невозможно авторизовать пользователя',
     data: null
   });
 });
 
 app.post('/app_invite', authorize, async (req, res) => {
   const phone = req.body.phoneNumber;
-  const invitation = process.env.INVITATION_MESSAGE_TEMPLATE
-    .replace('<invitation_text>', process.env.INVITATION_MESSAGE_TEXT_RU);
-  const toSend = process.env.DEF_URL
+  const invitation = config.INVITATION_MESSAGE_TEMPLATE
+    .replace('<invitation_text>', config.INVITATION_MESSAGE_TEXT_RU);
+  const toSend = config.DEF_URL
     .replace('<phones>', phone)
     .replace('<message>', invitation);
   try {
@@ -127,7 +129,7 @@ app.post('/app_invite', authorize, async (req, res) => {
 
 app.post('/refresh', async (req, res) => {
   const refresher = req.headers.refresh;
-  return await jwt.verify(refresher, process.env.SECRET, async (err, decoded) => {
+  return await jwt.verify(refresher, config.SECRET, async (err, decoded) => {
     if(err || decoded.expired) return res.status(401).json({
       error: 'Время жизни токена исчерпано',
       data: null
@@ -137,12 +139,12 @@ app.post('/refresh', async (req, res) => {
       error: 'Неверный токен',
       data: null
     });
-    return await jwt.verify(token, process.env.SECRET, async (err, decoded) => {
+    return await jwt.verify(token, config.SECRET, async (err, decoded) => {
       await redis.del(refresher);
       await redis.del(token);
       const user = decoded;
-      const access = jwt.sign({ user }, process.env.SECRET, { expiresIn: '20m' });
-      const refresh = jwt.sign({ access }, process.env.SECRET, { expiresIn: '1w' });
+      const access = jwt.sign({ user }, config.SECRET, { expiresIn: '20m' });
+      const refresh = jwt.sign({ access }, config.SECRET, { expiresIn: '1w' });
       await redis.set(access, user);
       await redis.set(refresh, access);
       return res.json({
@@ -186,7 +188,7 @@ app.get('/user/:id', authorize, async (req, res) => {
 });
 
 app.get('/parties', authorize, async (req, res) => {
-  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const user = await jwt.verify(req.headers.access, config.SECRET);
   const id = user.id;
   const startTime = req.params.start_time || null;
   const endTime = req.params.end_time || null;
@@ -235,7 +237,7 @@ app.get('/friends/:id', authorize, async (req, res) => {
 });
 
 app.post('/friends/add/:id', authorize, async (req, res) => {
-  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const user = await jwt.verify(req.headers.access, config.SECRET);
   const uid = user.id;
   const id = req.params.id;
   const added = await addFriend(uid, id);
@@ -250,7 +252,7 @@ app.post('/friends/add/:id', authorize, async (req, res) => {
 });
 
 app.post('/friends/confirm/:id', authorize, async (req, res) => {
-  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const user = await jwt.verify(req.headers.access, config.SECRET);
   const uid = user.id;
   const id = req.params.id;
   const added = await confirmFriend(uid, id);
@@ -265,7 +267,7 @@ app.post('/friends/confirm/:id', authorize, async (req, res) => {
 });
 
 app.post('/friends/decline/:id', authorize, async (req, res) => {
-  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const user = await jwt.verify(req.headers.access, config.SECRET);
   const uid = user.id;
   const id = req.params.id;
   const added = await declineFriend(uid, id);
@@ -280,7 +282,7 @@ app.post('/friends/decline/:id', authorize, async (req, res) => {
 });
 
 app.post('/friends/remove/:id', authorize, async (req, res) => {
-  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const user = await jwt.verify(req.headers.access, config.SECRET);
   const uid = user.id;
   const id = req.params.id;
   const added = await removeFriend(uid, id);
@@ -316,7 +318,7 @@ app.post('/update_user_info', authorize, async (req, res) => {
 });
 
 app.post('/update_avatar', authorize, upload.single('image'), async (req, res) => {
-  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const user = await jwt.verify(req.headers.access, config.SECRET);
   const id = user.id;
   const image = req.file.buffer;
   const path = `images/avatars/id_${id}.png`;
@@ -340,7 +342,7 @@ app.post('/update_avatar', authorize, upload.single('image'), async (req, res) =
 });
 
 app.post('/rate', authorize, async (req, res) => {
-  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const user = await jwt.verify(req.headers.access, config.SECRET);
   const userID = user.id;
   const guestID = req.body.guest_id;
   const rating = Number.parseInt(req.body.rating);
@@ -361,7 +363,7 @@ app.post('/rate', authorize, async (req, res) => {
 
 app.post('/join_party', authorize, async (req, res) => {
   const partyID = req.body.partyID;
-  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const user = await jwt.verify(req.headers.access, config.SECRET);
   const userID = Number.parseInt(user.id);
   done = await joinParty(partyID, userID);
   if (!done) return res.status(500).json({
@@ -376,7 +378,7 @@ app.post('/join_party', authorize, async (req, res) => {
 
 app.post('/leave_party', authorize, async (req, res) => {
   const partyID = req.body.partyID;
-  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const user = await jwt.verify(req.headers.access, config.SECRET);
   const userID = Number.parseInt(user.id);
   const done = await leaveParty(partyID, userID);
   if (!done) return res.status(500).json({
@@ -390,7 +392,7 @@ app.post('/leave_party', authorize, async (req, res) => {
 });
 
 app.post('/update_user_location', authorize, async (req, res) => {
-  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const user = await jwt.verify(req.headers.access, config.SECRET);
   const userID = user.id;
   const city = req.body.city;
   const done = await updateUserLocation(userID, city);
@@ -458,7 +460,7 @@ app.get('/party/:id', authorize, async (req, res) => {
 });
 
 app.post('/create_party', authorize, async (req, res) => {
-  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const user = await jwt.verify(req.headers.access, config.SECRET);
   const uid = user.id;
   const hostID = req.body.hostID;
   const invitedIDs = req.body.invitedIDs || [];
@@ -497,7 +499,7 @@ app.post('/create_party', authorize, async (req, res) => {
 
 app.post('/modify_party', authorize, async (req, res) => {
   const partyID = req.body.partyID;
-  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const user = await jwt.verify(req.headers.access, config.SECRET);
   const userID = user.id;
   const fields = req.body.fields;
   const updateQueryArray = Object.keys(fields)
@@ -517,7 +519,7 @@ app.post('/modify_party', authorize, async (req, res) => {
 
 app.post('/suspend_party', authorize, async (req, res) => {
   const partyID = req.body.party_id;
-  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const user = await jwt.verify(req.headers.access, config.SECRET);
   const userID = user.id;
   const done = await suspendParty(partyID, userID);
   if (!done) return res.status(500).json({
@@ -532,7 +534,7 @@ app.post('/suspend_party', authorize, async (req, res) => {
 
 app.post('/invite_to_party', authorize, async (req, res) => {
   const partyID = req.body.party_id;
-  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const user = await jwt.verify(req.headers.access, config.SECRET);
   const userID = user.id;
   const guestID = req.body.guest_id;
   const { done, party, updatedUser } = await inviteToParty(partyID, userID, guestID);
@@ -548,7 +550,7 @@ app.post('/invite_to_party', authorize, async (req, res) => {
 
 app.get('/guest_list/:pid', authorize, async (req,res) => {
   const partyID = req.params.pid;
-  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const user = await jwt.verify(req.headers.access, config.SECRET);
   const userID = user.id;
   const list = await fetchGuests(partyID, userID);
   const listPending = await fetchGuestsPending(partyID, userID);
@@ -566,7 +568,7 @@ app.get('/guest_list/:pid', authorize, async (req,res) => {
 });
 
 app.get('/rate_guests/:id', authorize, async (req, res) => {
-  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const user = await jwt.verify(req.headers.access, config.SECRET);
   const userID = user.id;
   const partyID = req.params.id;
   if(!userID || !partyID) return res.json({
@@ -586,7 +588,7 @@ app.get('/rate_guests/:id', authorize, async (req, res) => {
 
 app.post('/kick_guest', authorize, async (req, res) => {
   const partyID = req.body.partyID;
-  const user = await jwt.verify(req.headers.access, process.env.SECRET);
+  const user = await jwt.verify(req.headers.access, config.SECRET);
   const userID = user.id;
   const guestID = req.body.guestID;
   const done = await kickGuest(partyID, userID, guestID);
@@ -601,6 +603,6 @@ app.post('/kick_guest', authorize, async (req, res) => {
 });
 // end of party/event related endpoints
 // running server
-app.listen(process.env.PORT, () => {
-  console.log(`UP & RUNNING ON ${process.env.PORT}`);
+app.listen(config.PORT, () => {
+  console.log(`UP & RUNNING ON ${config.PORT}`);
 });

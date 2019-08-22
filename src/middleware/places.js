@@ -1,8 +1,8 @@
-const axios = require('axios');
-const asyncRedis = require('async-redis');
+import axios from 'axios';
+import asyncRedis from 'async-redis';
 const redis = asyncRedis.createClient();
 
-const fetchPlaces = async (res, city = 'spb', places = [], page = 1, lang = 'ru') => {
+export const fetchPlaces = async (res, city = 'spb', places = [], page = 1, lang = 'ru') => {
   // checking cache
   let cachedPlaces = await redis.get(city);
   if(cachedPlaces) return res.json({
@@ -36,5 +36,3 @@ const fetchPlaces = async (res, city = 'spb', places = [], page = 1, lang = 'ru'
   }
   await fetchPlaces(res, city, updatedPlaces, ++page, lang);
 };
-
-module.exports.fetchPlaces = fetchPlaces;

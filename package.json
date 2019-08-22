@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "babel src --out-dir dist",
-    "start": "node index.js"
+    "start": "npm run build && node ./dist/index.js"
   },
   "author": "Drink Beside LLC",
   "license": "ISC",

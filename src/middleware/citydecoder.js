@@ -9,7 +9,7 @@ const cities = [
   }
 ];
 
-module.exports.decode = (city) => {
+export const decode = (city) => {
   const position = cities.filter(step => step.names.includes(city));
   if(!position) return null;
   return position[0].key;

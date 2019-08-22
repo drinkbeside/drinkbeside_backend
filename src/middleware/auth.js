@@ -1,9 +1,10 @@
-require('dotenv').config();
-const jwt = require('jsonwebtoken');
-const asyncRedis = require('async-redis');
+import * as dotenv from 'dotenv';
+dotenv.config();
+import jwt from 'jsonwebtoken';
+import asyncRedis from 'async-redis';
 const redis = asyncRedis.createClient();
 
-module.exports.authorize = async (req, res, next) => {
+export const authorize = async (req, res, next) => {
   const token = req.headers.access;
   return await jwt.verify(token, process.env.SECRET, async (err, decoded) => {
     if(err) return res.status(403).json({
