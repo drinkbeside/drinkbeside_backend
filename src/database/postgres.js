@@ -11,7 +11,7 @@ const pool = new Pool({
 
 pool.on('error', (err) => process.exit(-1));
 
-module.exports.userByPhone = (phone = null) => {
+export const userByPhone = (phone = null) => {
   return new Promise(resolve => {
     if (!phone) return resolve(null);
     return pool.connect((err, client, done) => {
@@ -31,7 +31,7 @@ module.exports.userByPhone = (phone = null) => {
   });
 };
 
-module.exports.userByID = (id = null) => {
+export const userByID = (id = null) => {
   return new Promise(resolve => {
     if (!id) return resolve(null);
     return pool.connect((err, client, done) => {
@@ -50,7 +50,7 @@ module.exports.userByID = (id = null) => {
   });
 };
 
-module.exports.userByInput = (input = null) => {
+export const userByInput = (input = null) => {
   return new Promise(resolve => {
     if(!input) return resolve(null);
     const parsed = Number.parseInt(input) || null;
@@ -71,7 +71,7 @@ module.exports.userByInput = (input = null) => {
   });
 };
 
-module.exports.ratingByID = (id = null) => {
+export const ratingByID = (id = null) => {
   return new Promise(resolve => {
     if (!id) return resolve(null);
     return pool.connect((err, client, done) => {
@@ -85,7 +85,7 @@ module.exports.ratingByID = (id = null) => {
   });
 };
 
-module.exports.saveUser = (phone = null) => {
+export const saveUser = (phone = null) => {
   return new Promise(resolve => {
     if (!phone) return resolve(null);
     return pool.connect((err, client, done) => {
@@ -99,7 +99,7 @@ module.exports.saveUser = (phone = null) => {
   });
 };
 
-module.exports.updateUserInfo = (id = null, fields = null) => {
+export const updateUserInfo = (id = null, fields = null) => {
   return new Promise(resolve => {
     if (!id || !fields) return resolve(null);
     return pool.connect((err, client, done) => {
@@ -113,7 +113,7 @@ module.exports.updateUserInfo = (id = null, fields = null) => {
   });
 };
 
-module.exports.updateRating = (uid = null, rid = null, rating = 5) => {
+export const updateRating = (uid = null, rid = null, rating = 5) => {
   return new Promise(resolve => {
     if (!uid || !rid) return resolve(null);
     return pool.connect((err, client, done) => {
@@ -127,7 +127,7 @@ module.exports.updateRating = (uid = null, rid = null, rating = 5) => {
   });
 };
 
-module.exports.updateAvatar = (id = null, path = null) => {
+export const updateAvatar = (id = null, path = null) => {
   return new Promise(resolve => {
     if (!id || !path) return resolve(null);
     return pool.connect((err, client, done) => {
@@ -141,7 +141,7 @@ module.exports.updateAvatar = (id = null, path = null) => {
   });
 };
 
-module.exports.createParty = ({
+export const createParty = ({
   hostID, invitedIDs, name,
   minPrice, maxPrice, address, type,
   start, end, minRating, limit
@@ -168,7 +168,7 @@ module.exports.createParty = ({
   });
 };
 
-module.exports.partyByID = (id = null) => {
+export const partyByID = (id = null) => {
   return new Promise(resolve => {
     if (!id) return resolve(null);
     return pool.connect((err, client, done) => {
@@ -182,7 +182,7 @@ module.exports.partyByID = (id = null) => {
   });
 };
 
-module.exports.fetchParties = (id = null, stime, etime, minamnt, maxamnt) => {
+export const fetchParties = (id = null, stime, etime, minamnt, maxamnt) => {
   return new Promise(resolve => {
     if (!id) return resolve(null);
     return pool.connect((err, client, done) => {
@@ -204,7 +204,7 @@ module.exports.fetchParties = (id = null, stime, etime, minamnt, maxamnt) => {
   });
 };
 
-module.exports.friendsByID = (id = null) => {
+export const friendsByID = (id = null) => {
   return new Promise(resolve => {
     if (!id) return resolve(null);
     return pool.connect((err, client, done) => {
@@ -219,7 +219,7 @@ module.exports.friendsByID = (id = null) => {
   });
 };
 
-module.exports.addFriend = (uid = null, id = null) => {
+export const addFriend = (uid = null, id = null) => {
   return new Promise(resolve => {
     if (!id || !uid) return resolve(null);
     return pool.connect((err, client, done) => {
@@ -239,7 +239,7 @@ module.exports.addFriend = (uid = null, id = null) => {
   });
 };
 
-module.exports.confirmFriend = (uid = null, id = null) => {
+export const confirmFriend = (uid = null, id = null) => {
   return new Promise(resolve => {
     if (!id || !uid) return resolve(null);
     return pool.connect((err, client, done) => {
@@ -262,7 +262,7 @@ module.exports.confirmFriend = (uid = null, id = null) => {
   });
 };
 
-module.exports.declineFriend = (uid = null, id = null) => {
+export const declineFriend = (uid = null, id = null) => {
   return new Promise(resolve => {
     if (!id || !uid) return resolve(null);
     return pool.connect((err, client, done) => {
@@ -282,7 +282,7 @@ module.exports.declineFriend = (uid = null, id = null) => {
   });
 };
 
-module.exports.removeFriend = (uid = null, id = null) => {
+export const removeFriend = (uid = null, id = null) => {
   return new Promise(resolve => {
     if (!id || !uid) return resolve(null);
     return pool.connect((err, client, done) => {
@@ -299,7 +299,7 @@ module.exports.removeFriend = (uid = null, id = null) => {
   });
 };
 
-module.exports.inviteToParty = (pid = null, uid = null, gid = null) => {
+export const inviteToParty = (pid = null, uid = null, gid = null) => {
   const error = { done: false, party: null, user: null };
   return new Promise(async resolve => {
     if (!pid || !uid || !gid) return resolve(error);
@@ -322,7 +322,7 @@ module.exports.inviteToParty = (pid = null, uid = null, gid = null) => {
   });
 };
 
-module.exports.suspendParty = (pid = null, uid = null) => {
+export const suspendParty = (pid = null, uid = null) => {
   return new Promise(async resolve => {
     if (!pid || !uid) return resolve(null);
     const party = await self.partyByID(pid);
@@ -340,7 +340,7 @@ module.exports.suspendParty = (pid = null, uid = null) => {
   });
 };
 
-module.exports.modifyParty = (pid = null, uid = null, data = null) => {
+export const modifyParty = (pid = null, uid = null, data = null) => {
   return new Promise(async resolve => {
     if (!pid || !uid || !data) return resolve(null);
     const party = await self.partyByID(pid);
@@ -355,7 +355,7 @@ module.exports.modifyParty = (pid = null, uid = null, data = null) => {
   });
 };
 
-module.exports.joinParty = (pid = null, uid = null) => {
+export const joinParty = (pid = null, uid = null) => {
   return new Promise(async resolve => {
     if (!pid || !uid) return resolve(null);
     const party = await self.partyByID(pid);
@@ -375,7 +375,7 @@ module.exports.joinParty = (pid = null, uid = null) => {
   });
 };
 
-module.exports.guestList = (pid = null, uid = null) => {
+export const guestList = (pid = null, uid = null) => {
   return new Promise(async resolve => {
     if (!pid || !uid) return resolve(null);
     const party = await self.partyByID(pid);
@@ -392,7 +392,7 @@ module.exports.guestList = (pid = null, uid = null) => {
   });
 };
 
-module.exports.guestListPending = (pid = null, uid = null) => {
+export const guestListPending = (pid = null, uid = null) => {
   return new Promise(async resolve => {
     if (!pid || !uid) return resolve(null);
     const party = await self.partyByID(pid);
@@ -409,7 +409,7 @@ module.exports.guestListPending = (pid = null, uid = null) => {
   });
 };
 
-module.exports.fetchGuests = (pid = null, uid = null) => {
+export const fetchGuests = (pid = null, uid = null) => {
   return new Promise(async resolve => {
     if (!pid || !uid) return resolve(null);
     const party = await self.partyByID(pid);
@@ -426,7 +426,7 @@ module.exports.fetchGuests = (pid = null, uid = null) => {
   });
 };
 
-module.exports.fetchGuestsPending = (pid = null, uid = null) => {
+export const fetchGuestsPending = (pid = null, uid = null) => {
   return new Promise(async resolve => {
     if (!pid || !uid) return resolve(null);
     const party = await self.partyByID(pid);
@@ -443,7 +443,7 @@ module.exports.fetchGuestsPending = (pid = null, uid = null) => {
   });
 };
 
-module.exports.kickGuest = (pid = null, uid = null, gid = null) => {
+export const kickGuest = (pid = null, uid = null, gid = null) => {
   return new Promise(async resolve => {
     if (!pid || !uid || !gid) return resolve(null);
     const party = await self.partyByID(pid);
@@ -459,7 +459,7 @@ module.exports.kickGuest = (pid = null, uid = null, gid = null) => {
   });
 };
 
-module.exports.kickGuestPending = (pid = null, uid = null, gid = null) => {
+export const kickGuestPending = (pid = null, uid = null, gid = null) => {
   return new Promise(async resolve => {
     if (!pid || !uid || !gid) return resolve(null);
     const party = await self.partyByID(pid);
@@ -475,7 +475,7 @@ module.exports.kickGuestPending = (pid = null, uid = null, gid = null) => {
   });
 };
 
-module.exports.leaveParty = (pid = null, uid = null) => {
+export const leaveParty = (pid = null, uid = null) => {
   return new Promise(resolve => {
     if (!pid || !uid) return resolve(null);
     return pool.connect((err, client, done) => {
@@ -489,7 +489,7 @@ module.exports.leaveParty = (pid = null, uid = null) => {
   });
 };
 
-module.exports.updateUserLocation = (uid = null, city = null) => {
+export const updateUserLocation = (uid = null, city = null) => {
   return new Promise(resolve => {
     if (!uid || !city) return resolve(null);
     return pool.connect((err, client, done) => {
@@ -503,7 +503,7 @@ module.exports.updateUserLocation = (uid = null, city = null) => {
   });
 };
 
-module.exports.declineInvitation = (pid = null, uid = null) => {
+export const declineInvitation = (pid = null, uid = null) => {
   return new Promise(resolve => {
     if (!pid || !uid) return resolve(null);
     return pool.connect((err, client, done) => {

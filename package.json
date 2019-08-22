@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "babel src --out-dir dist",
+    "start": "node index.js"
   },
-  "author": "",
+  "author": "Drink Beside LLC",
   "license": "ISC",
   "dependencies": {
     "async-redis": "^1.1.7",
@@ -19,5 +20,12 @@
     "jsonwebtoken": "^8.5.1",
     "multer": "^1.4.1",
     "pg": "^7.11.0"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.5.5",
+    "@babel/core": "^7.5.5",
+    "@babel/node": "^7.5.5",
+    "@babel/preset-env": "^7.5.5",
+    "babel-plugin-inline-dotenv": "^1.3.3"
   }
 }
