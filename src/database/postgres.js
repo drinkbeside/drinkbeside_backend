@@ -1,16 +1,6 @@
-import * as dotenv from 'dotenv';
-dotenv.config();
-import { Pool } from 'pg';
+import { dbpool } from './pool';
 
-const self = this;
-
-const config = process.env;
-
-const pool = new Pool({
-  connectionString: config.DB_URL,
-});
-
-pool.on('error', (err) => process.exit(-1));
+const pool = dbpool();
 
 export const userByPhone = (phone = null) => {
   return new Promise(resolve => {
@@ -22,7 +12,7 @@ export const userByPhone = (phone = null) => {
         if (err) return resolve(null);
         const user = result.rows[0];
         if(!user) return resolve(user);
-        const rating = await self.ratingByID(user.id);
+        const rating = await ratingByID(user.id);
         return resolve({
           ...user,
           rating: rating
@@ -41,7 +31,7 @@ export const userByID = (id = null) => {
         done();
         if (err) return resolve(null);
         const user = result.rows[0];
-        const rating = await self.ratingByID(id);
+        const rating = await ratingByID(id);
         return resolve({
           ...user,
           rating: rating
@@ -62,7 +52,7 @@ export const userByInput = (input = null) => {
         done();
         if(err) return resolve(null);
         const user = result.rows[0];
-        const rating = await self.ratingByID(user.id);
+        const rating = await ratingByID(user.id);
         return resolve({
           ...user,
           rating: rating
@@ -304,9 +294,9 @@ export const inviteToParty = (pid = null, uid = null, gid = null) => {
   const error = { done: false, party: null, user: null };
   return new Promise(async resolve => {
     if (!pid || !uid || !gid) return resolve(error);
-    const party = await self.partyByID(pid);
+    const party = await partyByID(pid);
     if (!party || party.host_id !== uid) return resolve(error);
-    const userToInvite = await self.userByID(gid);
+    const userToInvite = await userByID(gid);
     if (!userToInvite) return resolve(error);
     return pool.connect((err, client, done) => {
       if (err) return resolve(error);
@@ -326,7 +316,7 @@ export const inviteToParty = (pid = null, uid = null, gid = null) => {
 export const suspendParty = (pid = null, uid = null) => {
   return new Promise(async resolve => {
     if (!pid || !uid) return resolve(null);
-    const party = await self.partyByID(pid);
+    const party = await partyByID(pid);
     if (uid !== party.host_id) return resolve(null);
     if (party.is_suspended) return resolve(true);
     return pool.connect((err, client, done) => {
@@ -344,7 +334,7 @@ export const suspendParty = (pid = null, uid = null) => {
 export const modifyParty = (pid = null, uid = null, data = null) => {
   return new Promise(async resolve => {
     if (!pid || !uid || !data) return resolve(null);
-    const party = await self.partyByID(pid);
+    const party = await partyByID(pid);
     if (uid !== party.host_id) return resolve(null);
     return pool.connect((err, client, done) => {
       if (err) return resolve(null);
@@ -359,8 +349,8 @@ export const modifyParty = (pid = null, uid = null, data = null) => {
 export const joinParty = (pid = null, uid = null) => {
   return new Promise(async resolve => {
     if (!pid || !uid) return resolve(null);
-    const party = await self.partyByID(pid);
-    const user = await self.userByID(uid);
+    const party = await partyByID(pid);
+    const user = await userByID(uid);
     if (party.type === -1 || party.min_rating > user.rating ) return resolve(null);
     return pool.connect((err, client, done) => {
       if (err) return resolve(null);
@@ -379,7 +369,7 @@ export const joinParty = (pid = null, uid = null) => {
 export const guestList = (pid = null, uid = null) => {
   return new Promise(async resolve => {
     if (!pid || !uid) return resolve(null);
-    const party = await self.partyByID(pid);
+    const party = await partyByID(pid);
     if (party.type === -1 && party.host_id !== uid) return resolve(null);
     return pool.connect((err, client, done) => {
       if (err) return resolve(null);
@@ -396,7 +386,7 @@ export const guestList = (pid = null, uid = null) => {
 export const guestListPending = (pid = null, uid = null) => {
   return new Promise(async resolve => {
     if (!pid || !uid) return resolve(null);
-    const party = await self.partyByID(pid);
+    const party = await partyByID(pid);
     if (party.type === -1 && party.host_id !== uid) return resolve(null);
     return pool.connect((err, client, done) => {
       if (err) return resolve(null);
@@ -413,7 +403,7 @@ export const guestListPending = (pid = null, uid = null) => {
 export const fetchGuests = (pid = null, uid = null) => {
   return new Promise(async resolve => {
     if (!pid || !uid) return resolve(null);
-    const party = await self.partyByID(pid);
+    const party = await partyByID(pid);
     if (party.type === -1 && party.host_id !== uid) return resolve(null);
     return pool.connect((err, client, done) => {
       if (err) return resolve(null);
@@ -430,7 +420,7 @@ export const fetchGuests = (pid = null, uid = null) => {
 export const fetchGuestsPending = (pid = null, uid = null) => {
   return new Promise(async resolve => {
     if (!pid || !uid) return resolve(null);
-    const party = await self.partyByID(pid);
+    const party = await partyByID(pid);
     if (party.type === -1 && party.host_id !== uid) return resolve(null);
     return pool.connect((err, client, done) => {
       if (err) return resolve(null);
@@ -447,7 +437,7 @@ export const fetchGuestsPending = (pid = null, uid = null) => {
 export const kickGuest = (pid = null, uid = null, gid = null) => {
   return new Promise(async resolve => {
     if (!pid || !uid || !gid) return resolve(null);
-    const party = await self.partyByID(pid);
+    const party = await partyByID(pid);
     if (uid !== party.host_id) return resolve(null);
     return pool.connect((err, client, done) => {
       if (err) return resolve(null);
@@ -463,7 +453,7 @@ export const kickGuest = (pid = null, uid = null, gid = null) => {
 export const kickGuestPending = (pid = null, uid = null, gid = null) => {
   return new Promise(async resolve => {
     if (!pid || !uid || !gid) return resolve(null);
-    const party = await self.partyByID(pid);
+    const party = await partyByID(pid);
     if (uid !== party.host_id) return resolve(null);
     return pool.connect((err, client, done) => {
       if (err) return resolve(null);
