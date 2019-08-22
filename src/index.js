@@ -1,6 +1,7 @@
 // to keep consts away from file
 import * as dotenv from 'dotenv';
 dotenv.config();
+const config = process.env;
 // libraries
 import express from 'express'
 import cors from 'cors';
@@ -9,7 +10,6 @@ import multer from 'multer';
 // system consts
 const app = express();
 const upload = multer();
-const config = process.env;
 // custom functions
 import * as router from './router';
 import { authorize as auth } from './middleware/auth';
