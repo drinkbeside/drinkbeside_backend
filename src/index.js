@@ -17,17 +17,7 @@ const redis = asyncRedis.createClient();
 const upload = multer();
 const config = process.env;
 // custom functions
-import {
-  userByID, userByPhone, userByInput, saveUser,
-  updateUserInfo, updateRating, updateAvatar,
-  partyByID, fetchParties, createParty, inviteToParty,
-  suspendParty, modifyParty, joinParty,
-  guestList, guestListPending,
-  fetchGuests, fetchGuestsPending,
-  kickGuest, kickGuestPending,
-  leaveParty, declineInvitation,
-  friendsByID, addFriend, removeFriend, confirmFriend, declineFriend
-} from './database/postgres';
+import './database';
 import { fetchPlaces } from './middleware/places';
 import { authorize } from './middleware/auth';
 import { decode } from './middleware/citydecoder';
