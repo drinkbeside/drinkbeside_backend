@@ -5,10 +5,13 @@ const redis = asyncRedis.createClient();
 export const fetchPlaces = async (res, city = 'spb', places = [], page = 1, lang = 'ru') => {
   // checking cache
   let cachedPlaces = await redis.get(city);
-  if(cachedPlaces) return res.json({
-    error: null,
-    data: JSON.parse(cachedPlaces)
-  });
+  if(cachedPlaces) {
+    if(!res) return JSON.parse(cachedPlaces);
+    return res.json({
+      error: null,
+      data: JSON.parse(cachedPlaces)
+    });
+  }
   // in case there is no cache
   const url = `https://kudago.com/public-api/v1.4/places/?lang=${lang}&page=${page}&page_size=100&fields=${'title,address,location,timetable,phone,description,coords,subway'}&text_format=text&location=${city}&categories=bar,bar-s-zhivoj-muzykoj,cafe,clubs,fastfood,restaurants`;
   console.log(url);
@@ -29,6 +32,7 @@ export const fetchPlaces = async (res, city = 'spb', places = [], page = 1, lang
     setTimeout(() => {
       redis.del(city);
     }, process.env.CACHE_TIMEOUT);
+    if(!res) return updatedPlaces;
     return res.json({
       error: null,
       data: updatedPlaces
