@@ -20,6 +20,10 @@ export const authorize = async (req, res, next) => {
       data: null
     });
     user = JSON.parse(user);
+    console.log(decoded.expired);
+    console.log(decoded.phone !== user.phone);
+    console.log(decoded.phone);
+    console.log(user.phone);
     if(decoded.phone !== user.phone || decoded.expired) return res.status(401).json({
       error: 'Ошибка доступа по токену, вы должны быть авторизованы',
       data: null
