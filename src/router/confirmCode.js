@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken';
 import asyncRedis from 'async-redis';
 const redis = asyncRedis.createClient();
 
-import { userByPhone, saveUser } from '../database';
+import { userByPhone, updateUserLocation, saveUser } from '../database';
 
 export const confirmCode = async (req, res) => {
   const phone = req.body.phoneNumber.replace('+', '');
