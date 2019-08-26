@@ -36,7 +36,7 @@ export const parties = async (req, res) => {
   });
   Promise.all(partiesFormatted).then(result => {
     res.json({
-      data: result,
+      data: result.reverse(),
       error: null
     });
   });
