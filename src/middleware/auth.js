@@ -5,6 +5,7 @@ import asyncRedis from 'async-redis';
 const redis = asyncRedis.createClient();
 
 export const authorize = async (req, res, next) => {
+  console.log(req.headers.access);
   const token = req.headers.access;
   return await jwt.verify(token, process.env.SECRET, async (err, decoded) => {
     if(err) {
@@ -15,6 +16,7 @@ export const authorize = async (req, res, next) => {
       });
     }
     let user = await redis.get(token);
+    console.log(user);
     if(!user) return res.status(401).json({
       error: 'Ошибка, такого токена не существует',
       data: null
