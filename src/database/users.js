@@ -76,12 +76,12 @@ export const ratingByID = (id = null) => {
   });
 };
 
-export const saveUser = (phone = null) => {
+export const saveUser = (phone = null, city = null) => {
   return new Promise(resolve => {
-    if (!phone) return resolve(null);
+    if (!phone || !city) return resolve(null);
     return pool.connect((err, client, done) => {
       if (err) return resolve(null);
-      return client.query(`INSERT INTO users(phone) VALUES('${phone}') RETURNING *`, (err, result) => {
+      return client.query(`INSERT INTO users(phone, city) VALUES('${phone}', '${city}') RETURNING *`, (err, result) => {
         done();
         if (err) return resolve(null);
         return resolve(result.rows[0]);

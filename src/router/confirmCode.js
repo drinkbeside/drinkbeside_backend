@@ -11,13 +11,14 @@ import { userByPhone, saveUser } from '../database';
 export const confirmCode = async (req, res) => {
   const phone = req.body.phoneNumber.replace('+', '');
   const code = req.body.code;
+  const city = req.body.city;
   const codeKept = await redis.get(phone);
   if (!codeKept || codeKept !== code) return res.status(400).json({
     error: 'Вы прислали неверный код',
     data: null
   });
   let user = await userByPhone(phone);
-  if (!user) user = await saveUser(phone);
+  if (!user) user = await saveUser(phone, city);
   if (user) {
     await redis.del(phone);
     const access = jwt.sign({ user }, config.SECRET, { expiresIn: '1w' });
