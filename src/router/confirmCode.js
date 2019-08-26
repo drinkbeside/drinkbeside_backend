@@ -20,7 +20,8 @@ export const confirmCode = async (req, res) => {
   let user = await userByPhone(phone);
   if (!user) user = await saveUser(phone);
   const updatedUser = await updateUserLocation(user.id, city);
-  if (user) {
+  console.log(updatedUser);
+  if (updatedUser) {
     await redis.del(phone);
     const access = jwt.sign({ user: updatedUser }, config.SECRET, { expiresIn: '1w' });
     const refresh = jwt.sign({ access }, config.SECRET, { expiresIn: '1w' });
