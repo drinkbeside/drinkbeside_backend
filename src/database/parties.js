@@ -1,5 +1,7 @@
 import { dbpool } from './pool';
 
+import { userByID } from './users.js';
+
 const pool = dbpool();
 
 export const inviteToParty = (pid = null, uid = null, gid = null) => {
@@ -70,18 +72,20 @@ export const fetchParties = (id = null, stime, etime, minamnt, maxamnt) => {
     if (!id) return resolve(null);
     return pool.connect((err, client, done) => {
       if (err) return resolve(null);
-      client.query(`SELECT * FROM parties WHERE id IN (SELECT party_id FROM party_guests WHERE guest_id = ${id}) OR type = 0`, (err, result) => {
+      client.query(`SELECT * FROM parties WHERE id IN (SELECT party_id FROM party_guests WHERE guest_id = ${id})`, (err, result) => {
         if (err) return resolve(null);
-        const parties = result.rows;
-        client.query(`SELECT guest_id FROM party_guests WHERE party_id IN (${parties.join(',')}) GROUP BY party_id`, (err, result) => {
-          done();
-          if(err) return resolve(null);
-          let queriedParties = parties;
-          if(stime) queriedParties = parties.filter(party => party.start_time >= stime);
-          if(etime) queriedParties = queriedParties.filter(party => party.end_time <= etime);
-
-          return resolve(result.rows);
-        });
+        return resolve(result.rows);
+        //  OR type = 0
+        // const parties = result.rows;
+        // client.query(`SELECT guest_id FROM party_guests WHERE party_id IN (${parties.join(',')}) GROUP BY party_id`, (err, result) => {
+        //   done();
+        //   if(err) return resolve(null);
+        //   let queriedParties = parties;
+        //   if(stime) queriedParties = parties.filter(party => party.start_time >= stime);
+        //   if(etime) queriedParties = queriedParties.filter(party => party.end_time <= etime);
+        //
+        //   return resolve(result.rows);
+        // });
       });
     });
   });
