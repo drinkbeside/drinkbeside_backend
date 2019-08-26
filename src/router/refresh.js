@@ -22,7 +22,7 @@ export const refresh = async (req, res) => {
       await redis.del(refresher);
       await redis.del(token);
       const user = decoded;
-      const access = jwt.sign({ user }, config.SECRET, { expiresIn: '20m' });
+      const access = jwt.sign({ user }, config.SECRET, { expiresIn: '1w' });
       const refresh = jwt.sign({ access }, config.SECRET, { expiresIn: '1w' });
       await redis.set(access, JSON.stringify(user));
       await redis.set(refresh, access);
