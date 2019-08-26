@@ -16,6 +16,7 @@ export const authorize = async (req, res, next) => {
       });
     }
     let user = await redis.get(token);
+    console.log(token);
     console.log(user);
     if(!user) return res.status(401).json({
       error: 'Ошибка, такого токена не существует',
