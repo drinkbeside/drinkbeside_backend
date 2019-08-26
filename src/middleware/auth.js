@@ -14,14 +14,13 @@ export const authorize = async (req, res, next) => {
         data: null
       });
     }
-    let user = await redis.get(token);
+    const user = await redis.get(token);
     if(!user) return res.status(401).json({
       error: 'Ошибка, такого токена не существует',
       data: null
     });
-    console.log(typeof(user));
-    console.log(JSON.parse(user));
-    if(decoded.phone !== JSON.parse(user).phone || decoded.expired) return res.status(401).json({
+    const parsed = JSON.parse(user);
+    if(decoded.phone !== parsed.phone || decoded.expired) return res.status(401).json({
       error: 'Ошибка доступа по токену, вы должны быть авторизованы',
       data: null
     });
