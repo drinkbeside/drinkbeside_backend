@@ -137,10 +137,10 @@ export const updateUserLocation = (uid = null, city = null) => {
     if (!uid || !city) return resolve(null);
     return pool.connect((err, client, done) => {
       if (err) return resolve(null);
-      client.query(`UPDATE users SET city = ${city} WHERE id = ${uid}`, (err, result) => {
+      client.query(`UPDATE users SET city = ${city} WHERE id = ${uid} RETURNING *`, (err, result) => {
         if (err) return resolve(null);
         done();
-        return resolve(true);
+        return resolve(result.rows[0]);
       })
     })
   });
