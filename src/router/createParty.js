@@ -32,7 +32,7 @@ export const createParty = async (req, res) => {
     data: null,
     error: 'Невозможно создать событие'
   });
-  done = await joinParty(party.id, uid);
+  const done = await joinParty(party.id, uid);
   if (!done) return res.status(500).json({
     data: null,
     error: 'Ошибка создания тусовки'

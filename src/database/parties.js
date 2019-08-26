@@ -1,6 +1,6 @@
 import { dbpool } from './pool';
 
-import { userByID } from './users.js';
+import { userByID } from './users';
 
 const pool = dbpool();
 
