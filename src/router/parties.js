@@ -7,7 +7,7 @@ import jwt from 'jsonwebtoken';
 import { fetchParties, guestList, guestListPending } from '../database';
 
 export const parties = async (req, res) => {
-  const user = await jwt.verify(req.headers.access, config.SECRET);
+  const { user } = await jwt.verify(req.headers.access, config.SECRET);
   const id = user.id;
   const startTime = req.params.start_time || null;
   const endTime = req.params.end_time || null;

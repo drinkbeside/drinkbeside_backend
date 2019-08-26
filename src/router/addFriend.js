@@ -4,7 +4,7 @@ const config = process.env;
 import { addFriend as toFriends } from '../database';
 
 export const addFriend = async (req, res) => {
-  const user = await jwt.verify(req.headers.access, config.SECRET);
+  const { user } = await jwt.verify(req.headers.access, config.SECRET);
   const uid = user.id;
   const id = req.params.id;
   const added = await toFriends(uid, id);

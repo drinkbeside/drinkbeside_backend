@@ -7,7 +7,7 @@ import jwt from 'jsonwebtoken';
 import { confirmFriend as acceptFriend } from '../database';
 
 export const confirmFriend = async (req, res) => {
-  const user = await jwt.verify(req.headers.access, config.SECRET);
+  const { user } = await jwt.verify(req.headers.access, config.SECRET);
   const uid = user.id;
   const id = req.params.id;
   const added = await acceptFriend(uid, id);

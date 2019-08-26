@@ -7,7 +7,7 @@ import { fetchGuests, fetchGuestsPending } from '../database';
 
 export const guestList = async (req,res) => {
   const partyID = req.params.pid;
-  const user = await jwt.verify(req.headers.access, config.SECRET);
+  const { user } = await jwt.verify(req.headers.access, config.SECRET);
   const userID = user.id;
   const list = await fetchGuests(partyID, userID);
   const listPending = await fetchGuestsPending(partyID, userID);

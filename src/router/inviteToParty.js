@@ -7,7 +7,7 @@ import { inviteToParty as addToParty } from '../database';
 
 export const inviteToParty = async (req, res) => {
   const partyID = req.body.party_id;
-  const user = await jwt.verify(req.headers.access, config.SECRET);
+  const { user } = await jwt.verify(req.headers.access, config.SECRET);
   const userID = user.id;
   const guestID = req.body.guest_id;
   const { done, party, updatedUser } = await addToParty(partyID, userID, guestID);

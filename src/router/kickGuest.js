@@ -7,7 +7,7 @@ import { kickGuest as removeGuest } from '../database';
 
 export const kickGuest = async (req, res) => {
   const partyID = req.body.partyID;
-  const user = await jwt.verify(req.headers.access, config.SECRET);
+  const { user } = await jwt.verify(req.headers.access, config.SECRET);
   const userID = user.id;
   const guestID = req.body.guestID;
   const done = await removeGuest(partyID, userID, guestID);

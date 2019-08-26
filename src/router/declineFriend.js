@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken';
 import { declineFriend as cancelFriend } from '../database';
 
 export const declineFriend = async (req, res) => {
-  const user = await jwt.verify(req.headers.access, config.SECRET);
+  const { user } = await jwt.verify(req.headers.access, config.SECRET);
   const uid = user.id;
   const id = req.params.id;
   const added = await cancelFriend(uid, id);

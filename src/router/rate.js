@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken';
 import { updateRating } from '../database';
 
 export const rate = async (req, res) => {
-  const user = await jwt.verify(req.headers.access, config.SECRET);
+  const { user } = await jwt.verify(req.headers.access, config.SECRET);
   const userID = user.id;
   const guestID = req.body.guest_id;
   const rating = Number.parseInt(req.body.rating);

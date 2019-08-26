@@ -7,7 +7,7 @@ import { modifyParty as editParty } from '../database';
 
 export const modifyParty = async (req, res) => {
   const partyID = req.body.partyID;
-  const user = await jwt.verify(req.headers.access, config.SECRET);
+  const { user } = await jwt.verify(req.headers.access, config.SECRET);
   const userID = user.id;
   const fields = req.body.fields;
   const updateQueryArray = Object.keys(fields)

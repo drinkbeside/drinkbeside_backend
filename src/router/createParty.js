@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken';
 import { createParty as newParty, joinParty } from '../database';
 
 export const createParty = async (req, res) => {
-  const user = await jwt.verify(req.headers.access, config.SECRET);
+  const { user } = await jwt.verify(req.headers.access, config.SECRET);
   const uid = user.id;
   const hostID = req.body.hostID;
   const invitedIDs = req.body.invitedIDs || [];
