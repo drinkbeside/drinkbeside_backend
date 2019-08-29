@@ -23,12 +23,21 @@ export const addFriend = (uid = null, id = null) => {
     return pool.connect((err, client, done) => {
       if (err) return resolve(null);
       client.query(`SELECT * FROM friends WHERE (user_id = ${uid} AND friend_id = ${uid}) OR (user_id = ${uid} AND friend_id = ${id})`, (err, result) => {
-        if (!err) return resolve(null);
+        if (!err) {
+          console.log('tut');
+          return resolve(null);
+        }
         client.query(`INSERT INTO friends_pending(user_id, friend_id) VALUES(${uid}, ${id})`, (err, result) => {
-          if (err) return resolve(null);
+          if (err) {
+            console.log('tut 2', err);
+            return resolve(null);
+          }
           client.query(`SELECT * FROM users WHERE id = ${id}`, (err, result) => {
             done();
-            if (err) return resolve(null);
+            if (err) {
+              console.log('tut 2', err);
+              return resolve(null);
+            }
             return resolve(result.rows);
           });
         });
