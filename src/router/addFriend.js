@@ -1,6 +1,7 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
 const config = process.env;
+import jwt from 'jsonwebtoken';
 import { addFriend as toFriends } from '../database';
 
 export const addFriend = async (req, res) => {
