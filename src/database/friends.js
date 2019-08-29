@@ -9,9 +9,7 @@ export const friendsByID = (id = null) => {
       if (err) return resolve(null);
       client.query(`SELECT DISTINCT UNNEST(ARRAY[user_id, friend_id]) FROM friends WHERE user_id = ${id} OR friend_id = ${id}`, (err, result) => {
         if (err) return resolve(null);
-        const formatted = result.rows.filter(row => row != id);
-        console.log(formatted);
-        console.log(`SELECT * FROM users WHERE id IN (${formatted.join(',')})`);
+        const formatted = result.rows.filter(row => row.unnest != id).map(row => row.unnest);
         client.query(`SELECT * FROM users WHERE id IN (${formatted.join(',')})`, (err, result) => {
           done();
           if (err) return resolve(null);
