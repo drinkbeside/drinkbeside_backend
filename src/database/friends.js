@@ -8,10 +8,13 @@ export const friendsByID = (id = null) => {
     return pool.connect((err, client, done) => {
       if (err) return resolve(null);
       client.query(`SELECT DISTINCT UNNEST(ARRAY[user_id, friend_id]) FROM friends WHERE user_id = ${id} OR friend_id = ${id}`, (err, result) => {
-        done();
         if (err) return resolve(null);
         const formatted = result.rows.filter(row => row != id);
-        return resolve(formatted);
+        client.query(`SELECT * FROM users WHERE id IN (${formatted.join(',')})`, (err, result) => {
+          done();
+          if (err) return resolve(null);
+          return resolve(result.rows);
+        });
       });
     });
   });
