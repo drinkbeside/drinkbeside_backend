@@ -23,7 +23,8 @@ export const addFriend = (uid = null, id = null) => {
     return pool.connect((err, client, done) => {
       if (err) return resolve(null);
       client.query(`SELECT * FROM friends WHERE (user_id = ${uid} AND friend_id = ${uid}) OR (user_id = ${uid} AND friend_id = ${id})`, (err, result) => {
-        if (!err) {
+        console.log(result);
+        if (err) {
           console.log('tut');
           return resolve(null);
         }
