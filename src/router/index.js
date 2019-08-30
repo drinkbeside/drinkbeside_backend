@@ -6,6 +6,7 @@ export { seek } from './seek';
 export { seekUserByID } from './seekUserByID';
 export { parties } from './parties';
 export { friends } from './friends';
+export { friendsPending } from './friendsPending';
 export { addFriend } from './addFriend';
 export { confirmFriend } from './confirmFriend';
 export { declineFriend } from './declineFriend';

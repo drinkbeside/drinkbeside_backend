@@ -20,6 +20,24 @@ export const friendsByID = (id = null) => {
   });
 };
 
+export const pendingFriendsByID = (id = null) => {
+  return new Promise(resolve => {
+    if (!id) return resolve(null);
+    return pool.connect((err, client, done) => {
+      if (err) return resolve(null);
+      client.query(`SELECT DISTINCT UNNEST(ARRAY[user_id, friend_id]) FROM friends_pending WHERE user_id = ${id} OR friend_id = ${id}`, (err, result) => {
+        if (err) return resolve(null);
+        const formatted = result.rows.filter(row => row.unnest != id).map(row => row.unnest);
+        client.query(`SELECT * FROM users WHERE id IN (${formatted.join(',')})`, (err, result) => {
+          done();
+          if (err) return resolve(null);
+          return resolve(result.rows);
+        });
+      });
+    });
+  });
+};
+
 export const addFriend = (uid = null, id = null) => {
   return new Promise(resolve => {
     if (!id || !uid) return resolve(null);
