@@ -25,7 +25,7 @@ app.post('/auth/confirm', router.confirmCode);
 app.post('/auth/refresh', router.refresh);
 
 app.get('/friends/:id', auth, router.friends);
-app.get('/friends/:id/pending', auth, router.friendsPending);
+app.get('/friends/pending', auth, router.friendsPending);
 app.post('/friends/:id/add', auth, router.addFriend);
 app.post('/friends/:id/confirm', auth, router.confirmFriend);
 app.post('/friends/:id/decline', auth, router.declineFriend);
