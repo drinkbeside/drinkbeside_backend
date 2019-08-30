@@ -25,10 +25,10 @@ export const pendingFriendsByID = (id = null) => {
     if (!id) return resolve(null);
     return pool.connect((err, client, done) => {
       if (err) return resolve(null);
-      client.query(`SELECT DISTINCT UNNEST(ARRAY[user_id, friend_id]) FROM friends_pending WHERE user_id = ${id} OR friend_id = ${id}`, (err, result) => {
+      client.query(`SELECT user_id FROM friends_pending WHERE friend_id = ${id}`, (err, result) => {
         if (err) return resolve(null);
-        const formatted = result.rows.filter(row => row.unnest != id).map(row => row.unnest);
-        client.query(`SELECT * FROM users WHERE id IN (${formatted.join(',')})`, (err, result) => {
+        // const formatted = result.rows.filter(row => row.unnest != id).map(row => row.unnest);
+        client.query(`SELECT * FROM users WHERE id IN (${result.rows.join(',')})`, (err, result) => {
           done();
           if (err) return resolve(null);
           return resolve(result.rows);
