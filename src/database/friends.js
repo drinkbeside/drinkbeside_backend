@@ -27,7 +27,7 @@ export const pendingFriendsByID = (id = null) => {
       if (err) return resolve(null);
       client.query(`SELECT user_id FROM friends_pending WHERE friend_id = ${id}`, (err, result) => {
         if (err) return resolve(null);
-        console.log(result.rows.join(','));
+        console.log(`${result.rows.join(',')}`);
         let query = `SELECT * FROM users WHERE id IN (${result.rows.join(',')})`;
         if(result.rows.length == 1) query = `SELECT * FROM users WHERE id = ${result.rows[0]}`;
         client.query(query, (err, result) => {
