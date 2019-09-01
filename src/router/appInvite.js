@@ -21,6 +21,7 @@ export const appInvite = async (req, res) => {
       data: 'Приглашение отправлено'
     });
   } catch (e) {
+    console.log(e);
     res.status(500).json({
       error: 'Ошибка отправки приглашения',
       data: null
