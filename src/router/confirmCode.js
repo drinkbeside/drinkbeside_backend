@@ -18,7 +18,9 @@ export const confirmCode = async (req, res) => {
     data: null
   });
   let user = await userByPhone(phone);
+  console.log(`Тут user: ${user}`);
   if (!user) user = await saveUser(phone);
+  console.log(`А здесь user: ${user}`);
   if (!user) res.status(500).json({
     error: 'Невозможно авторизовать пользователя',
     data: null

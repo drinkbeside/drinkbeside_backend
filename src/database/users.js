@@ -11,7 +11,8 @@ export const userByPhone = (phone = null) => {
         done();
         if (err) return resolve(null);
         const user = result.rows[0];
-        if(!user) return resolve(user);
+        console.log(`А в БД user: ${user}`);
+        if(!user) return resolve(null);
         const rating = await ratingByID(user.id);
         return resolve({
           ...user,
