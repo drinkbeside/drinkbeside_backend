@@ -19,24 +19,22 @@ export const confirmCode = async (req, res) => {
   });
   let user = await userByPhone(phone);
   if (!user) user = await saveUser(phone);
+  if (!user) res.status(500).json({
+    error: 'Невозможно авторизовать пользователя',
+    data: null
+  });
   await updateUserLocation(user.id, city);
   user = {
     ...user,
     city: city
   };
-  if (user) {
-    await redis.del(phone);
-    const access = jwt.sign({ user }, config.SECRET, { expiresIn: '1w' });
-    const refresh = jwt.sign({ access }, config.SECRET, { expiresIn: '1w' });
-    await redis.set(access, JSON.stringify(user));
-    await redis.set(refresh, access);
-    return res.json({
-      error: null,
-      data: { ...user, access, refresh }
-    });
-  }
-  res.status(500).json({
-    error: 'Невозможно авторизовать пользователя',
-    data: null
+  await redis.del(phone);
+  const access = jwt.sign({ user }, config.SECRET, { expiresIn: '1w' });
+  const refresh = jwt.sign({ access }, config.SECRET, { expiresIn: '1w' });
+  await redis.set(access, JSON.stringify(user));
+  await redis.set(refresh, access);
+  return res.json({
+    error: null,
+    data: { ...user, access, refresh }
   });
 };
