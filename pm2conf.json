@@ -1,0 +1,9 @@
+{
+    "apps": [
+        {
+            "name": "drinkbeside API",
+            "script": "npm",
+            "args" : "start"
+        }
+    ]
+}
