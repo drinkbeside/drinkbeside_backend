@@ -53,15 +53,30 @@ export const createParty = ({
   });
 };
 
-export const partyByID = (id = null) => {
+export const partyByID = (pid = null, uid = null) => {
   return new Promise(resolve => {
-    if (!id) return resolve(null);
+    if (!pid) return resolve(null);
     return pool.connect((err, client, done) => {
       if (err) return resolve(null);
-      client.query(`SELECT * FROM parties WHERE id = ${id}`, (err, result) => {
+      client.query(`SELECT * FROM parties WHERE id = ${pid}`, (err, result) => {
         done();
         if (err) return resolve(null);
+        if (uid) result.rows[0].attending = isGuest(pid, uid);
         return resolve(result.rows[0]);
+      });
+    });
+  });
+};
+
+export const isGuest = (pid = null, uid = null) => {
+  //возвращает Boolean, проверяет, является ли пользователь с заданным uid гостем на событии с заданным pid
+  return new Promise(resolve => {
+    if (!pid || !uid) return resolve(null);
+    return pool.connect((err, client, done) => {
+      if (err) return resolve(null);
+      client.query(`SELECT * FROM party_guests WHERE guest_id = ${uid} AND party_id = ${pid}`, (err, result) => {
+        if (err) return resolve(null);
+        return resolve(Boolean(result.rows));
       });
     });
   });
