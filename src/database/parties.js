@@ -1,6 +1,7 @@
 import { dbpool } from './pool';
 
 import { userByID } from './users';
+import { guestList, fetchGuests } from './guests';
 
 const pool = dbpool();
 
@@ -87,9 +88,15 @@ export const fetchParties = (id = null, stime, etime, minamnt, maxamnt) => {
     if (!id) return resolve(null);
     return pool.connect((err, client, done) => {
       if (err) return resolve(null);
-      client.query(`SELECT * FROM parties WHERE id IN (SELECT party_id FROM party_guests WHERE guest_id = ${id})`, (err, result) => {
+      client.query(`SELECT * FROM parties WHERE id IN (SELECT party_id FROM party_guests WHERE guest_id = ${id})`, async (err, result) => {
         if (err) return resolve(null);
-        return resolve(result.rows);
+        const formatted = await result.rows.map(async row => {
+          return {
+            ...row,
+            guestsCount: await guestList(row.party_id, id)
+          }
+        });
+        return resolve(formatted);
         //  OR type = 0
         // const parties = result.rows;
         // client.query(`SELECT guest_id FROM party_guests WHERE party_id IN (${parties.join(',')}) GROUP BY party_id`, (err, result) => {
