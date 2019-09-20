@@ -25,4 +25,4 @@ export const updateAvatar = async (req, res) => {
     error: 'Ошибка загрузки, попробуйте заново',
     data: null
   });
-}
+};
