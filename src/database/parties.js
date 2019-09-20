@@ -63,7 +63,10 @@ export const partyByID = (pid = null, uid = null) => {
         done();
         if (err) return resolve(null);
         if (uid) result.rows[0].attending = await isGuest(pid, uid);
-        return resolve(result.rows[0]);
+        return resolve({
+          ...result.rows[0],
+          guestList: await fetchGuests(pid, uid)
+        });
       });
     });
   });
