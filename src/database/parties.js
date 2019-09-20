@@ -58,10 +58,10 @@ export const partyByID = (pid = null, uid = null) => {
     if (!pid) return resolve(null);
     return pool.connect((err, client, done) => {
       if (err) return resolve(null);
-      client.query(`SELECT * FROM parties WHERE id = ${pid}`, (err, result) => {
+      client.query(`SELECT * FROM parties WHERE id = ${pid}`, async (err, result) => {
         done();
         if (err) return resolve(null);
-        if (uid) result.rows[0].attending = isGuest(pid, uid);
+        if (uid) result.rows[0].attending = await isGuest(pid, uid);
         return resolve(result.rows[0]);
       });
     });
