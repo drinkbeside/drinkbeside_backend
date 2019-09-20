@@ -1,7 +1,7 @@
 import { dbpool } from './pool';
 
 import { userByID } from './users';
-import { guestList, fetchGuests } from './guests';
+import { isGuest, guestList, fetchGuests } from './guests';
 
 const pool = dbpool();
 
@@ -64,20 +64,6 @@ export const partyByID = (pid = null, uid = null) => {
         if (err) return resolve(null);
         if (uid) result.rows[0].attending = await isGuest(pid, uid);
         return resolve(result.rows[0]);
-      });
-    });
-  });
-};
-
-export const isGuest = (pid = null, uid = null) => {
-  //возвращает Boolean, проверяет, является ли пользователь с заданным uid гостем на событии с заданным pid
-  return new Promise(resolve => {
-    if (!pid || !uid) return resolve(null);
-    return pool.connect((err, client, done) => {
-      if (err) return resolve(null);
-      client.query(`SELECT * FROM party_guests WHERE guest_id = ${uid} AND party_id = ${pid}`, (err, result) => {
-        if (err) return resolve(null);
-        return resolve(Boolean(result.rows));
       });
     });
   });
