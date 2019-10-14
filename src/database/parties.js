@@ -74,17 +74,20 @@ export const partyByID = (pid = null, uid = null) => {
 
 export const fetchParties = (id = null, stime, etime, minamnt, maxamnt) => {
   return new Promise(resolve => {
-    if (!id) return resolve(null);
     return pool.connect((err, client, done) => {
       if (err) return resolve(null);
-      client.query(`SELECT * FROM parties WHERE id IN (SELECT party_id FROM party_guests WHERE guest_id = ${id})`, async (err, result) => {
+      client.query(`SELECT * FROM parties WHERE ${id ? `id IN (SELECT party_id FROM party_guests WHERE guest_id = ${id}) OR` : ''} type = 0`, async (err, result) => {
         if (err) return resolve(null);
-        const formatted = await result.rows.map(async row => {
+        let formatted = await result.rows.map(async row => {
           return {
             ...row,
             guestsCount: await guestList(row.party_id, id)
           }
         });
+        if(stime) formatted = formatted.filter(party => party.start_time >= stime);
+        if(etime) formatted = formatted.filter(party => party.end_time <= etime);
+        if(minamnt) formatted = formatted.filter(party => party.guestsCount >= minamnt);
+        if(maxamnt) formatted = formatted.filter(party => party.guestsCount <= maxamnt);
         return resolve(formatted);
         //  OR type = 0
         // const parties = result.rows;
