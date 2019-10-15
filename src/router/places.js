@@ -1,6 +1,7 @@
 import asyncRedis from 'async-redis';
 
 import { fetchPlaces } from '../middleware/places';
+import { userByPhone } from '../database/users';
 
 const redis = asyncRedis.createClient();
 
