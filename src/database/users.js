@@ -150,7 +150,7 @@ export const updateUserLocation = (uid = null, city = null) => {
         console.log(err);
         return resolve(null);
       }
-      client.query(`UPDATE users SET city = ${city} WHERE id = ${uid} RETURNING *`, (err, result) => {
+      client.query(`UPDATE users SET city = '${city}' WHERE id = ${uid} RETURNING *`, (err, result) => {
         if (err) {
           console.log(err);
           return resolve(null);
