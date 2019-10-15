@@ -20,7 +20,7 @@ export const isGuest = (pid = null, uid = null) => {
 
 export const guestList = (pid = null, uid = null) => {
   return new Promise(async resolve => {
-    if (!pid || !uid) return resolve(null);
+    if (!pid) return resolve(null);
     const party = await partyByID(pid);
     if (party.type === -1 && party.host_id !== uid) return resolve(null);
     return pool.connect((err, client, done) => {
