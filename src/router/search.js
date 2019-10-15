@@ -15,7 +15,7 @@ export const search = async (req, res) => {
     error: 'Некорректный запрос'
   });
   if (!city) {
-    const user = await redis.get(req.headers.token);
+    const user = await redis.get(req.headers.access);
     const parsed = JSON.parse(user);
     const found = await userByPhone(parsed.phone);
     city = found.city;
