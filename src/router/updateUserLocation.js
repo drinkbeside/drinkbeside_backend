@@ -4,7 +4,7 @@ const config = process.env;
 
 import jwt from 'jsonwebtoken';
 import { decode } from '../middleware/citydecoder';
-import { updateLocation } from '../database';
+import { updateUserLocation as updateLocation } from '../database';
 
 export const updateUserLocation = async (req, res) => {
   const { user } = await jwt.verify(req.headers.access, config.SECRET);
