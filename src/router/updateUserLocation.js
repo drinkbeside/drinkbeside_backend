@@ -11,7 +11,10 @@ export const updateUserLocation = async (req, res) => {
   const userID = user.id;
   const city = req.body.city;
   const decoded = decode(city);
-  console.log(userID, city);
+  if(!decoded) return res.status(500).json({
+    data: null,
+    error: 'В этом городе мы еще не работаем'
+  });
   const done = await updateLocation(userID, decoded);
   if (!done) return res.status(500).json({
     data: null,
