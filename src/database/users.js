@@ -145,9 +145,16 @@ export const updateUserLocation = (uid = null, city = null) => {
   return new Promise(resolve => {
     if (!uid || !city) return resolve(null);
     return pool.connect((err, client, done) => {
-      if (err) return resolve(null);
+      if (err) {
+        console.log('БД пизда');
+        console.log(err);
+        return resolve(null);
+      }
       client.query(`UPDATE users SET city = ${city} WHERE id = ${uid} RETURNING *`, (err, result) => {
-        if (err) return resolve(null);
+        if (err) {
+          console.log(err);
+          return resolve(null);
+        }
         done();
         return resolve(result.rows[0]);
       })
