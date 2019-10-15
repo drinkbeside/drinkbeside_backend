@@ -1,13 +1,25 @@
 import fusejs from 'fuse.js';
+
+import asyncRedis from 'async-redis';
+
 import { fetchPlaces } from '../middleware/places';
+import { userByPhone } from '../database/users';
+
+const redis = asyncRedis.createClient();
 
 export const search = async (req, res) => {
   const query = req.body.query;
-  const city = req.body.city;
-  if (!query || !city) return res.json({
+  let city = req.body.city;
+  if (!query) return res.json({
     data: null,
     error: 'Некорректный запрос'
   });
+  if (!city) {
+    const user = await redis.get(req.headers.token);
+    const parsed = JSON.parse(user);
+    const found = await userByPhone(parsed.phone);
+    city = found.city;
+  }
   const options = {
     keys: [{
       name: 'title',
