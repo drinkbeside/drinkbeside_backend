@@ -1,10 +1,13 @@
+import * as dotenv from 'dotenv';
+dotenv.config();
+
 import fs from 'fs';
 import jwt from 'jsonwebtoken';
 
 import { updateAvatar as editAvatar } from '../database';
 
 export const updateAvatar = async (req, res) => {
-  const { user } = await jwt.verify(req.headers.access, config.SECRET);
+  const { user } = await jwt.verify(req.headers.access, process.env.SECRET);
   const id = user.id;
   const image = req.file.buffer;
   const path = `images/avatars/id_${id}.png`;
