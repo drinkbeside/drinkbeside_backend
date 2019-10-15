@@ -14,3 +14,7 @@ export const decode = (city) => {
   if(!position) return null;
   return position[0].key;
 };
+
+export const encode = (key) => {
+  return cities.filter(city => city.key === key)[0].names[0];
+}

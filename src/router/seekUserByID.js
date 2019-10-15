@@ -1,5 +1,7 @@
 import { userByID } from '../database';
 
+import { encode } from '../middleware/citydecoder';
+
 export const seekUserByID = async (req, res) => {
   const id = Number.parseInt(req.params.id);
   const user = await userByID(id);
@@ -10,7 +12,8 @@ export const seekUserByID = async (req, res) => {
   res.json({
     error: null,
     data: {
-      ...user
+      ...user,
+      city: encode(user.city)
     }
   });
 };
