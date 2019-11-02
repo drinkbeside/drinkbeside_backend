@@ -50,6 +50,9 @@ app.post('/party/suspend', auth, router.suspendParty);
 app.post('/party/invite', auth, router.inviteToParty);
 app.post('/party/kick', auth, router.kickGuest);
 
+app.post('/address/latlon', auth, router.getAddressFromLatlon);
+app.post('/address/string', auth, router.getAddressFromString);
+
 app.get('/seek', auth, router.seek);
 app.post('/places', auth, router.places);
 app.post('/search', auth, router.search);

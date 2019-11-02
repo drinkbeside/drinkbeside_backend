@@ -27,3 +27,5 @@ export { inviteToParty } from './inviteToParty';
 export { guestList } from './guestList';
 export { rateGuest } from './rateGuest';
 export { kickGuest } from './kickGuest';
+export { getAddressFromLatlon } from './getAddressFromLatlon';
+export { getAddressFromString } from './getAddressFromString';
