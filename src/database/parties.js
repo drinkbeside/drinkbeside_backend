@@ -62,6 +62,7 @@ export const partyByID = (pid = null, uid = null) => {
       client.query(`SELECT * FROM parties WHERE id = ${pid}`, async (err, result) => {
         done();
         if (err) return resolve(null);
+        if(!result.rows[0]) return resolve(null);
         if (uid) result.rows[0].attending = await isGuest(pid, uid);
         return resolve({
           ...result.rows[0],
