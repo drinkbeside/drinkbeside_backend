@@ -21,6 +21,7 @@ export const parties = async (req, res) => {
     guestMaxAmount
   );
   const partiesFormatted = await parties.map(async party => {
+    console.log(party);
     const partyID = party.id;
     const list = await guestList(partyID, id);
     const listPending = await guestListPending(partyID, id);
