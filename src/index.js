@@ -20,6 +20,10 @@ app.use(bodyparser.json({limit: '50mb', extended: true}));
 app.use(bodyparser.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static('public'));
 // endpoints
+app.get('/isAppBlocked', (req, res) => {
+  res.json({ data: false, error: null });
+});
+
 app.post('/auth/send', router.sendCode);
 app.post('/auth/confirm', router.confirmCode);
 app.post('/auth/refresh', router.refresh);
