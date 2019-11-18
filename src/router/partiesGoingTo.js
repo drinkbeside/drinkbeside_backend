@@ -4,24 +4,12 @@ const config = process.env;
 
 import jwt from 'jsonwebtoken';
 
-import { fetchParties, guestList, guestListPending } from '../database';
+import { fetchPartiesGoingTo, guestList, guestListPending } from '../database';
 
-export const parties = async (req, res) => {
+export const partiesGoingTo = async (req, res) => {
   const { user } = await jwt.verify(req.headers.access, config.SECRET);
   const id = user.id;
-  const startTime = req.params.start_time || null;
-  const endTime = req.params.end_time || null;
-  const guestMinAmount = req.params.min_amount || null;
-  const guestMaxAmount = req.params.max_amount || null;
-  const limit = req.params.limit || null;
-  const parties = await fetchParties(
-    id,
-    startTime,
-    endTime,
-    guestMinAmount,
-    guestMaxAmount,
-    limit
-  );
+  const parties = await fetchPartiesGoingTo(id);
   const partiesFormatted = await parties.map(async party => {
     const awaitedParty = await party;
     const partyID = awaitedParty.id;

@@ -5,6 +5,7 @@ export { refresh } from './refresh';
 export { seek } from './seek';
 export { seekUserByID } from './seekUserByID';
 export { parties } from './parties';
+export { partiesGoingTo } from './partiesGoingTo';
 export { friends } from './friends';
 export { friendsPending } from './friendsPending';
 export { addFriend } from './addFriend';

@@ -72,11 +72,11 @@ export const partyByID = (pid = null, uid = null) => {
   });
 };
 
-export const fetchParties = (id = null, stime, etime, minamnt, maxamnt) => {
+export const fetchParties = (id = null, stime, etime, minamnt, maxamnt, limit) => {
   return new Promise(resolve => {
     return pool.connect((err, client, done) => {
       if (err) return resolve(null);
-      client.query(`SELECT * FROM parties WHERE ${id ? `id IN (SELECT party_id FROM party_guests WHERE guest_id = ${id}) OR` : ''} type = 0`, async (err, result) => {
+      client.query(`SELECT * FROM parties WHERE ${id ? `id IN (SELECT party_id FROM party_guests WHERE guest_id = ${id}) OR` : ''} type = 0 ${ limit ? `LIMIT ${limit}` : '' }`, async (err, result) => {
         if (err) return resolve(null);
         let formatted = await result.rows.map(async row => {
           return {
@@ -88,6 +88,35 @@ export const fetchParties = (id = null, stime, etime, minamnt, maxamnt) => {
         if(etime) formatted = formatted.filter(party => party.end_time <= etime);
         if(minamnt) formatted = formatted.filter(party => party.guestsCount >= minamnt);
         if(maxamnt) formatted = formatted.filter(party => party.guestsCount <= maxamnt);
+        return resolve(formatted);
+        //  OR type = 0
+        // const parties = result.rows;
+        // client.query(`SELECT guest_id FROM party_guests WHERE party_id IN (${parties.join(',')}) GROUP BY party_id`, (err, result) => {
+        //   done();
+        //   if(err) return resolve(null);
+        //   let queriedParties = parties;
+        //   if(stime) queriedParties = parties.filter(party => party.start_time >= stime);
+        //   if(etime) queriedParties = queriedParties.filter(party => party.end_time <= etime);
+        //
+        //   return resolve(result.rows);
+        // });
+      });
+    });
+  });
+};
+
+export const fetchPartiesGoingTo = (id) => {
+  return new Promise(resolve => {
+    return pool.connect((err, client, done) => {
+      if (err) return resolve(null);
+      client.query(`SELECT * FROM parties WHERE id IN (SELECT party_id FROM party_guests WHERE guest_id = ${id});`, async (err, result) => {
+        if (err) return resolve(null);
+        let formatted = await result.rows.map(async row => {
+          return {
+            ...row,
+            guestsCount: await guestList(row.party_id, id)
+          }
+        });
         return resolve(formatted);
         //  OR type = 0
         // const parties = result.rows;

@@ -39,6 +39,7 @@ app.post('/user/update_avatar', auth, upload.single('image'), router.updateAvata
 app.post('/user/update_location', auth, router.updateUserLocation);
 
 app.get('/parties', auth, router.parties);
+app.get('/partiesGoingTo', auth, router.partiesGoingTo);
 app.get('/party/:id/guests', auth, router.guestList);
 app.get('/party/:id', auth, router.partyByID);
 app.post('/party/rate', auth, router.rate);
