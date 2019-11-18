@@ -21,12 +21,12 @@ export const parties = async (req, res) => {
     guestMaxAmount
   );
   const partiesFormatted = await parties.map(async party => {
-    console.log(party);
-    const partyID = party.id;
+    const awaitedParty = await party;
+    const partyID = awaitedParty.id;
     const list = await guestList(partyID, id);
     const listPending = await guestListPending(partyID, id);
     return {
-      ...party,
+      ...awaitedParty,
       guests: list ? list.length : 0,
       pending_guests: listPending ? listPending.length : 0
     };
