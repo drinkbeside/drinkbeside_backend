@@ -40,7 +40,7 @@ export const search = async (req, res) => {
   // const fuse = new fusejs(JSON.parse(data), options);
   // const result = await fuse.search(query);
   res.json({
-    data: JSON.parse(data),
+    data: data,
     error: null
   });
 };
