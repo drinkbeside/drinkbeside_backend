@@ -1,5 +1,7 @@
 import { partyByID as getParty } from '../database';
 
+import jwt from 'jsonwebtoken';
+
 export const partyByID = async (req, res) => {
   const { user } = await jwt.verify(req.headers.access, config.SECRET);
   const uid = user.id;
