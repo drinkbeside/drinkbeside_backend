@@ -1,6 +1,10 @@
-import { partyByID as getParty } from '../database';
+import * as dotenv from 'dotenv';
+dotenv.config();
+const config = process.env;
 
 import jwt from 'jsonwebtoken';
+
+import { partyByID as getParty } from '../database';
 
 export const partyByID = async (req, res) => {
   const { user } = await jwt.verify(req.headers.access, config.SECRET);
