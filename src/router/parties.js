@@ -26,8 +26,8 @@ export const parties = async (req, res) => {
     const listPending = await guestListPending(partyID, id);
     return {
       ...party,
-      guests: list.length,
-      pending_guests: listPending.length
+      guests: list ? list.length : 0,
+      pending_guests: listPending ? listPending.length : 0
     };
   });
   if(!parties) return res.status(500).json({
