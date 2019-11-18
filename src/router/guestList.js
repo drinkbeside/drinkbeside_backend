@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken';
 import { fetchGuests, fetchGuestsPending } from '../database';
 
 export const guestList = async (req,res) => {
-  const partyID = req.params.pid;
+  const partyID = req.params.id;
   const { user } = await jwt.verify(req.headers.access, config.SECRET);
   const userID = user.id;
   const list = await fetchGuests(partyID, userID);

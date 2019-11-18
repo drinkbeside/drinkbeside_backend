@@ -9,11 +9,11 @@ import { fetchParties, guestList, guestListPending } from '../database';
 export const parties = async (req, res) => {
   const { user } = await jwt.verify(req.headers.access, config.SECRET);
   const id = user.id;
-  const startTime = req.params.start_time || null;
-  const endTime = req.params.end_time || null;
-  const guestMinAmount = req.params.min_amount || null;
-  const guestMaxAmount = req.params.max_amount || null;
-  const limit = req.params.limit || null;
+  const startTime = req.query.start_time || null;
+  const endTime = req.query.end_time || null;
+  const guestMinAmount = req.query.min_amount || null;
+  const guestMaxAmount = req.query.max_amount || null;
+  const limit = req.query.limit || null;
   const parties = await fetchParties(
     id,
     startTime,
