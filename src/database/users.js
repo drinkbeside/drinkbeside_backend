@@ -7,19 +7,16 @@ export const userByPhone = (phone = null) => {
     if (!phone) return resolve(null);
     return pool.connect((err, client, done) => {
       if (err) {
-        console.log('ОШИБКА ПУЛА');
         console.log(err);
         return resolve(null);
       }
       client.query(`SELECT * FROM users WHERE phone = '${phone}'`, async (err, result) => {
         done();
         if (err) {
-          console.log('ОШИБКА ЗАПРОСА');
           console.log(err);
           return resolve(null);
         }
         const user = result.rows[0];
-        console.log(`А в БД user: ${user}`);
         if(!user) return resolve(null);
         const rating = await ratingByID(user.id);
         return resolve({
