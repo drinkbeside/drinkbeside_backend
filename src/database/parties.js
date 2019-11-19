@@ -15,7 +15,7 @@ export const inviteToParty = (pid = null, uid = null, gid = null) => {
     if (!userToInvite) return resolve(error);
     return pool.connect((err, client, done) => {
       if (err) return resolve(error);
-      client.query(`INSERT INTO party_guests_pending(party_id, guest_id) VALUES(${pid}, ${gid})`, (err, result) => {
+      client.query(`INSERT INTO party_guests(party_id, guest_id) VALUES(${pid}, ${gid})`, (err, result) => {
         done();
         if (err) return resolve(error);
         return resolve({
