@@ -90,7 +90,7 @@ export const fetchParties = (id = null, stime, etime, minamnt, maxamnt, limit) =
           }
         });
         formatted = await Promise.all(formatted);
-        if(stime && etime) formatted = formatted.filter(party => rangeContains(stime, party.start_time, party.end_time) || rangeContains(etime, party.start_time, party.end_time));
+        if(stime && etime) formatted = formatted.filter(party => rangeContains(party.start_time, stime, etime) || rangeContains(party.end_time, stime, etime));
         // if(etime) formatted = formatted.filter(party => party.end_time <= etime);
         if(minamnt) formatted = formatted.filter(party => party.guestsCount >= minamnt);
         if(maxamnt) formatted = formatted.filter(party => party.guestsCount <= maxamnt);
