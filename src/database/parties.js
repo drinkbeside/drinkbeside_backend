@@ -21,7 +21,7 @@ export const inviteToParty = (pid = null, uid = null, gid = null) => {
         return resolve({
           done: true,
           party: party,
-          user: userToInvite
+          updatedUser: userToInvite
         });
       });
     });
