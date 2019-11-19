@@ -11,6 +11,7 @@ export const inviteToParty = async (req, res) => {
   const userID = user.id;
   const guestID = req.body.guest_id;
   const { done, party, updatedUser } = await addToParty(partyID, userID, guestID);
+  console.log(updatedUser);
   if (!done) return res.status(500).json({
     data: null,
     error: 'Ошибка на стороне сервера, либо вы не хост события'
