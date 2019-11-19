@@ -27,6 +27,7 @@ export const inviteToParty = (pid = null, uid = null, gid = null) => {
     });
   });
 };
+
 export const createParty = ({
   hostID, invitedIDs, name,
   minPrice, maxPrice, address,

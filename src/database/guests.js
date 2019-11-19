@@ -12,7 +12,7 @@ export const isGuest = (pid = null, uid = null) => {
       if (err) return resolve(null);
       client.query(`SELECT * FROM party_guests WHERE guest_id = ${uid} AND party_id = ${pid}`, (err, result) => {
         if (err) return resolve(null);
-        return resolve(Boolean(result.rows));
+        return resolve(Boolean(result.rows[0]));
       });
     });
   });
