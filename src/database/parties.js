@@ -29,13 +29,14 @@ export const inviteToParty = (pid = null, uid = null, gid = null) => {
 };
 export const createParty = ({
   hostID, invitedIDs, name,
-  minPrice, maxPrice, address, type,
-  start, end, minRating, limit
+  minPrice, maxPrice, address,
+  lat, long, type, start, end,
+  minRating, limit
 }) => {
   return new Promise(resolve => {
     return pool.connect((err, client, done) => {
       if (err) return resolve(null);
-      client.query(`INSERT INTO parties(name, host_id, min_price, max_price, location, start_time, end_time, min_rating, type, invite_limit) VALUES('${name}', ${Number.parseInt(hostID)}, ${Number.parseInt(minPrice)}, ${Number.parseInt(maxPrice)}, '${address}', ${Number.parseFloat(start)}, ${Number.parseFloat(end)}, ${Number.parseFloat(minRating)}, ${Number.parseInt(type)}, ${Number.parseInt(limit)}) RETURNING *`, (err, result) => {
+      client.query(`INSERT INTO parties(name, host_id, min_price, max_price, location, lat, long, start_time, end_time, min_rating, type, invite_limit) VALUES('${name}', ${Number.parseInt(hostID)}, ${Number.parseInt(minPrice)}, ${Number.parseInt(maxPrice)}, '${address}', ${Number.parseFloat(lat)}, ${Number.parseFloat(long)}, ${Number.parseFloat(start)}, ${Number.parseFloat(end)}, ${Number.parseFloat(minRating)}, ${Number.parseInt(type)}, ${Number.parseInt(limit)}) RETURNING *`, (err, result) => {
         if (err) return resolve(null);
         const party = result.rows[0];
         if (invitedIDs.length > 1) {

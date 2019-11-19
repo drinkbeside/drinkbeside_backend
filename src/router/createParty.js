@@ -14,19 +14,21 @@ export const createParty = async (req, res) => {
   const minPrice = req.body.minPrice || 0;
   const maxPrice = req.body.maxPrice || 0;
   const address = req.body.address;
+  const lat = req.body.lat;
+  const long = req.body.long;
   const type = req.body.type || 0;
   const start = req.body.start;
   const end = req.body.end || 0;
   const minRating = req.body.minRating || 0.0;
   const limit = req.body.limit || 0;
-  if (!hostID || !name || !address || !start) return res.json({
+  if (!hostID || !name || !address || !lat || !long || !start) return res.json({
     data: null,
     error: 'Указаны не все обязательные поля'
   });
   const party = await newParty({
     hostID, invitedIDs, name,
-    minPrice, maxPrice, address, type,
-    start, end, minRating, limit
+    minPrice, maxPrice, address, lat, long,
+    type, start, end, minRating, limit
   });
   if(!party) return res.status(500).json({
     data: null,
