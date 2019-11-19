@@ -73,8 +73,8 @@ export const partyByID = (pid = null, uid = null) => {
   });
 };
 
-function isBetween(n, a, b) { // древняя цыганская магия
-   return (n - a) * (n - b) <= 0
+function rangeContains(value, range_start, range_end) {
+  return value >= range_start && value <= range_end
 }
 
 export const fetchParties = (id = null, stime, etime, minamnt, maxamnt, limit) => {
@@ -90,7 +90,7 @@ export const fetchParties = (id = null, stime, etime, minamnt, maxamnt, limit) =
           }
         });
         formatted = await Promise.all(formatted);
-        if(stime && etime) formatted = formatted.filter(party => isBetween(stime, party.start_time, party.end_time) || isBetween(etime, party.start_time, party.end_time));
+        if(stime && etime) formatted = formatted.filter(party => rangeContains(stime, party.start_time, party.end_time) || rangeContains(etime, party.start_time, party.end_time));
         // if(etime) formatted = formatted.filter(party => party.end_time <= etime);
         if(minamnt) formatted = formatted.filter(party => party.guestsCount >= minamnt);
         if(maxamnt) formatted = formatted.filter(party => party.guestsCount <= maxamnt);
