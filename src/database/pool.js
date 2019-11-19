@@ -11,6 +11,9 @@ export const dbpool = () => {
   pool = new Pool({
     connectionString: config.DB_URL,
   });
-  pool.on('error', (err) => process.exit(-1));
+  pool.on('error', (err) => {
+    console.log(err);
+    process.exit(-1);
+  });
   return pool;
 };
