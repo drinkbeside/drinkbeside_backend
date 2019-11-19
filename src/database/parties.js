@@ -12,6 +12,7 @@ export const inviteToParty = (pid = null, uid = null, gid = null) => {
     const party = await partyByID(pid);
     if (!party || party.host_id !== uid) return resolve(error);
     const userToInvite = await userByID(gid);
+    console.log(userToInvite);
     if (!userToInvite) return resolve(error);
     return pool.connect((err, client, done) => {
       if (err) return resolve(error);
