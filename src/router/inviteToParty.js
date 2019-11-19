@@ -16,7 +16,7 @@ export const inviteToParty = async (req, res) => {
     error: 'Ошибка на стороне сервера, либо вы не хост события'
   });
   res.json({
-    data: `Вы пригласили ${updatedUser.name} на ${party.name}`,
+    data: `Вы пригласили ${updatedUser.fname} ${updatedUser.lname} на ${party.name}`,
     error: null
   });
 };
