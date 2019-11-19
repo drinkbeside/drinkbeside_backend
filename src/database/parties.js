@@ -85,7 +85,7 @@ export const fetchParties = (id = null, stime, etime, minamnt, maxamnt, limit) =
             guestsCount: await guestList(row.party_id, id)
           }
         });
-        const formatted = await Promise.all(formatted);
+        formatted = await Promise.all(formatted);
         if(stime) formatted = formatted.filter(party => party.start_time >= stime);
         if(etime) formatted = formatted.filter(party => party.end_time <= etime);
         if(minamnt) formatted = formatted.filter(party => party.guestsCount >= minamnt);
