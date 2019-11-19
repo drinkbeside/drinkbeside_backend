@@ -77,7 +77,7 @@ export const fetchParties = (id = null, stime, etime, minamnt, maxamnt, limit) =
   return new Promise(resolve => {
     return pool.connect((err, client, done) => {
       if (err) return resolve(null);
-      client.query(`SELECT parties.*, users.fname, users.lname FROM parties LEFT JOIN users ON users.id = parties.host_id AND ${id ? `parties.id IN (SELECT party_id FROM party_guests WHERE guest_id = ${id}) OR` : ''} parties.type = 0  ${ limit ? `LIMIT ${limit}` : '' }`, async (err, result) => {
+      client.query(`SELECT parties.*, users.fname, users.lname FROM parties LEFT JOIN users ON users.id = parties.host_id AND (${id ? `parties.id IN (SELECT party_id FROM party_guests WHERE guest_id = ${id}) OR` : ''} parties.type = 0)  ${ limit ? `LIMIT ${limit}` : '' }`, async (err, result) => {
         if (err) return resolve(null);
         let formatted = await result.rows.map(async row => {
           return {
