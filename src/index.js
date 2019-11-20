@@ -63,7 +63,7 @@ app.post('/places', auth, router.places);
 app.post('/search', auth, router.search);
 
 app.post('/sendFcmMessage', auth, router.sendFcmMessage);
-app.post('/registerFcmToken', auth, router.registerFcmToken);
+app.post('/registerFcmToken', router.registerFcmToken);
 
 // running server
 // CHANGE PORT HERE BEFORE CODE REVIEW
