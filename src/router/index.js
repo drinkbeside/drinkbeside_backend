@@ -30,3 +30,5 @@ export { rateGuest } from './rateGuest';
 export { kickGuest } from './kickGuest';
 export { getAddressFromLatlon } from './getAddressFromLatlon';
 export { getAddressFromString } from './getAddressFromString';
+export { sendFcmMessage } from './sendFcmMessage';
+export { registerFcmToken } from './registerFcmToken';

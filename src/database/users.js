@@ -138,6 +138,29 @@ export const updateAvatar = (id = null, path = null) => {
   });
 };
 
+
+export const updateUserFcmToken = (uid = null, token = null) => {
+  return new Promise(resolve => {
+    if (!uid || !token) return resolve(null);
+    return pool.connect((err, client, done) => {
+      if (err) {
+        console.log('БД пизда');
+        console.log(err);
+        return resolve(null);
+      }
+      client.query(`UPDATE users SET fcmToken = '${token}' WHERE id = ${uid} RETURNING *`, (err, result) => {
+        if (err) {
+          console.log(err);
+          return resolve(null);
+        }
+        done();
+        return resolve(result.rows[0]);
+      })
+    })
+  });
+};
+
+
 export const updateUserLocation = (uid = null, city = null) => {
   return new Promise(resolve => {
     if (!uid || !city) return resolve(null);

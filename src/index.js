@@ -61,7 +61,12 @@ app.post('/address/string', auth, router.getAddressFromString);
 app.get('/seek', auth, router.seek);
 app.post('/places', auth, router.places);
 app.post('/search', auth, router.search);
+
+app.post('/sendFcmMessage', auth, router.sendFcmMessage);
+app.post('/registerFcmToken', auth, router.registerFcmToken);
+
 // running server
-app.listen(config.PORT, () => {
-  console.log(`UP & RUNNING ON ${config.PORT}`);
+// CHANGE PORT HERE BEFORE CODE REVIEW
+app.listen(7777, () => {
+  console.log(`UP & RUNNING ON 7777`);
 });
