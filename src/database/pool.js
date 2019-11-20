@@ -11,6 +11,7 @@ export const dbpool = () => {
   pool = new Pool({
     host: 'localhost',
     user: 'postgres',
+    password: null,
     max: 2000,
     idleTimeoutMillis: 3000,
     connectionTimeoutMillis: 2000,
