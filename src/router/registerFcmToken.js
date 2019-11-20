@@ -4,6 +4,7 @@ export const registerFcmToken = async (req, res) => {
   const data = req.body;
   const token = data.token;
   const id = Number.parseInt(data.userId);
+  console.log(id);
   const user = await userByID(id);
   if (user) {
     const updatedUser = await updateUserFcmToken(id, token);
