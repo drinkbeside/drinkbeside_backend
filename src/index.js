@@ -21,7 +21,7 @@ app.use(bodyparser.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static('public'));
 // endpoints
 app.get('/isAppBlocked', (req, res) => {
-  res.json({ data: false, error: null });
+  res.json({ data: false, error: null }); // Тут я просил возвращать просто булевую переменную, можешь поменять? хз как это правильно сделать
 });
 
 app.post('/auth/send', router.sendCode);

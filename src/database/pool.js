@@ -9,7 +9,8 @@ let pool;
 export const dbpool = () => {
   if (pool) return pool; // if it is already there, grab it here
   pool = new Pool({
-    connectionString: config.DB_URL,
+    host: 'localhost',
+    user: 'postgres',
     max: 2000,
     idleTimeoutMillis: 3000,
     connectionTimeoutMillis: 2000,
