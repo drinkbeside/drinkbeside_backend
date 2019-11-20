@@ -35,7 +35,7 @@ export const userByID = (id = null) => {
     console.log(2);
 
     return pool.connect((err, client, done) => {
-      console.log(3);
+      console.log(err);
 
       if (err) return resolve(null);
       console.log(4);
