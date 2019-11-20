@@ -1,7 +1,6 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
-const config = process.env;
-import { userByID } from './users';
+import { userByID } from '../database';
 
 var FCM = require('fcm-node');
 var serverKey = 'AAAAKFeT-j8:APA91bHFf4L4U7kfI5b9eW283O4Tjs-ais06z8NF0gQuFNygiRDD8qBzzvsgxWLttPu2UvJotZcLSJg_RPm8X-JM8z96DZUYLSsgYv1XtBSoNoAWm887kB4kwjxHb50wUQABUJzv6Ub3';
