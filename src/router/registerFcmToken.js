@@ -1,4 +1,5 @@
-import { userByID, updateUserFcmToken } from '../database';
+import { updateUserFcmToken } from '../database';
+import { userByID } from '../database/users.js'
 
 export const registerFcmToken = async (req, res) => {
   const data = req.body;
