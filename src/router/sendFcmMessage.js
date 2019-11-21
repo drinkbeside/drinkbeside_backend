@@ -11,7 +11,7 @@ const redis = asyncRedis.createClient();
 export const sendFcmMessage = async (req, res) => {
     const userId = Number.parseInt(req.body.userId);
     const user = await userByID(userId);
-    const token = user.token;
+    const token = user.fcmtoken;
     if (!token) {
         return res.json({
             error: "Пользователь не зарегистрировал токен для уведомлений.",
