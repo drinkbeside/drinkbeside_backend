@@ -9,6 +9,8 @@ import asyncRedis from 'async-redis';
 const redis = asyncRedis.createClient();
 
 export const sendFcmMessage = async (req, res) => {
+    const title = req.body.title;
+    const body = req.body.body;
     const userId = Number.parseInt(req.body.userId);
     const user = await userByID(userId);
     const token = user.fcmtoken;
@@ -23,8 +25,8 @@ export const sendFcmMessage = async (req, res) => {
         to: token, 
         
         notification: {
-            title: 'Title of your push notification', 
-            body: 'Body of your push notification' 
+            title: title, 
+            body: body 
         }
     };
 
