@@ -37,7 +37,7 @@ export const sendFcmMessage = async (req, res) => {
         } else {
             return res.json({
                 error: null,
-                data: "OK"
+                data: reponse
             })
         }
     });
