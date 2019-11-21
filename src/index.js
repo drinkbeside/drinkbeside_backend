@@ -21,7 +21,7 @@ app.use(bodyparser.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static('public'));
 // endpoints
 app.get('/isAppBlocked', (req, res) => {
-  res.json({ data: false, error: null });
+  res.send(false);
 });
 
 app.post('/auth/send', router.sendCode);
@@ -61,7 +61,12 @@ app.post('/address/string', auth, router.getAddressFromString);
 app.get('/seek', auth, router.seek);
 app.post('/places', auth, router.places);
 app.post('/search', auth, router.search);
+
+app.post('/sendFcmMessage', auth, router.sendFcmMessage);
+app.post('/registerFcmToken', router.registerFcmToken); // TODO: add jwt verifying
+
 // running server
+// CHANGE PORT HERE BEFORE CODE REVIEW
 app.listen(config.PORT, () => {
   console.log(`UP & RUNNING ON ${config.PORT}`);
 });
