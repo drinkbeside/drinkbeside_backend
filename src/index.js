@@ -21,7 +21,7 @@ app.use(bodyparser.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static('public'));
 // endpoints
 app.get('/isAppBlocked', (req, res) => {
-  res.json({ data: false, error: null }); // Тут я просил возвращать просто булевую переменную, можешь поменять? хз как это правильно сделать
+  res.send(false);
 });
 
 app.post('/auth/send', router.sendCode);
@@ -67,6 +67,6 @@ app.post('/registerFcmToken', router.registerFcmToken); // TODO: add jwt verifyi
 
 // running server
 // CHANGE PORT HERE BEFORE CODE REVIEW
-app.listen(7777, () => {
-  console.log(`UP & RUNNING ON 7777`);
+app.listen(env.PORT, () => {
+  console.log(`UP & RUNNING ON ${env.PORT}`);
 });
