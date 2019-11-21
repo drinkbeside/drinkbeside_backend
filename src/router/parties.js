@@ -22,6 +22,10 @@ export const parties = async (req, res) => {
     guestMaxAmount,
     limit
   );
+  if(!parties || !parties[0]) return res.status(500).json({
+    data: null,
+    error: 'Ошибка подбора событий, попробуйте позже'
+  });
   const partiesFormatted = await parties.map(async party => {
     const awaitedParty = await party;
     const partyID = awaitedParty.id;
@@ -32,10 +36,6 @@ export const parties = async (req, res) => {
       guests: list ? list.length : 0,
       pending_guests: listPending ? listPending.length : 0
     };
-  });
-  if(!parties) return res.status(500).json({
-    data: null,
-    error: 'Ошибка подбора событий, попробуйте позже'
   });
   Promise.all(partiesFormatted).then(result => {
     res.json({
