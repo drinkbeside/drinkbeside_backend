@@ -30,16 +30,9 @@ export const userByPhone = (phone = null) => {
 
 export const userByID = (id = null) => {
   return new Promise(resolve => {
-    console.log(1);
     if (!id) return resolve(null);
-    console.log(2);
-
     return pool.connect((err, client, done) => {
-      console.log(err);
-
       if (err) return resolve(null);
-      console.log(4);
-
       client.query(`SELECT * FROM users WHERE id = ${id}`, async (err, result) => {
         done();
         if (err) return resolve(null);
