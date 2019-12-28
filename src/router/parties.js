@@ -32,11 +32,12 @@ export const parties = async (req, res) => {
     const partyID = awaitedParty.id;
     const list = await guestList(partyID, id);
     const listPending = await guestListPending(partyID, id);
+    const host = await userByID(hostId);
     return {
       ...awaitedParty,
       guests: list ? list.length : 0,
       pending_guests: listPending ? listPending.length : 0,
-      host: await userByID(hostId)
+      host: host
     };
   });
   Promise.all(partiesFormatted).then(result => {
