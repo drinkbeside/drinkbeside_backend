@@ -4,7 +4,7 @@ const config = process.env;
 
 import jwt from 'jsonwebtoken';
 
-import { fetchParties, guestList, guestListPending } from '../database';
+import { fetchParties, guestList, guestListPending, userByID } from '../database';
 
 export const parties = async (req, res) => {
   const { user } = await jwt.verify(req.headers.access, config.SECRET);
@@ -28,13 +28,15 @@ export const parties = async (req, res) => {
   });
   const partiesFormatted = await parties.map(async party => {
     const awaitedParty = await party;
+    const hostId = awaitedParty.hostId;
     const partyID = awaitedParty.id;
     const list = await guestList(partyID, id);
     const listPending = await guestListPending(partyID, id);
     return {
       ...awaitedParty,
       guests: list ? list.length : 0,
-      pending_guests: listPending ? listPending.length : 0
+      pending_guests: listPending ? listPending.length : 0,
+      host: await userByID(hostId)
     };
   });
   Promise.all(partiesFormatted).then(result => {
