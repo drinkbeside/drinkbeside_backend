@@ -69,6 +69,6 @@ app.post('/registerFcmToken', router.registerFcmToken); // TODO: add jwt verifyi
 
 // running server
 // CHANGE PORT HERE BEFORE CODE REVIEW
-app.listen(1337, () => {
+app.listen(config.PORT, () => {
   console.log(`UP & RUNNING ON ${config.PORT}`);
 });
