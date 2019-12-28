@@ -34,7 +34,7 @@ export const search = async (req, res) => {
   //   }]
   // };
   const places = await fetchPlaces(null, city);
-  const data = places.filter(it => it.name.toLowerCase().includes(query.toLowerCase()) || it.address.toLowerCase().includes(query.toLowerCase()))
+  const data = places.filter(it => (it.name || "").toLowerCase().includes(query.toLowerCase()) || (it.address || "").toLowerCase().includes(query.toLowerCase()))
   // i know sql request will be better, but this request was not working at all, idite nahuy
   //todo: /\
   //      ||
