@@ -28,7 +28,7 @@ export const parties = async (req, res) => {
   });
   const partiesFormatted = await parties.map(async party => {
     const awaitedParty = await party;
-    const hostId = awaitedParty.hostId;
+    const hostId = awaitedParty.host_id;
     const partyID = awaitedParty.id;
     const list = await guestList(partyID, id);
     const listPending = await guestListPending(partyID, id);
