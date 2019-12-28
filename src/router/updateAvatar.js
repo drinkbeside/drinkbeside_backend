@@ -10,7 +10,8 @@ export const updateAvatar = async (req, res) => {
   const { user } = await jwt.verify(req.headers.access, process.env.SECRET);
   const id = user.id;
   const image = req.file.buffer;
-  const path = `images/avatars/id_${id}.png`;
+  const randomId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  const path = `images/avatars/id_${randomId}.png`;
   try {
     fs.writeFileSync(`public/${path}`, image);
   } catch (e) {
