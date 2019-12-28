@@ -61,9 +61,11 @@ app.post('/address/string', auth, router.getAddressFromString);
 app.get('/seek', auth, router.seek);
 app.post('/places', auth, router.places);
 app.post('/search', auth, router.search);
+app.get('/fetchShops', auth, router.fetchShops);
 
 app.post('/sendFcmMessage', auth, router.sendFcmMessage);
 app.post('/registerFcmToken', router.registerFcmToken); // TODO: add jwt verifying
+
 
 // running server
 // CHANGE PORT HERE BEFORE CODE REVIEW
