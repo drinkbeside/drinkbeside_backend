@@ -25,7 +25,8 @@ export const partiesGoingTo = async (req, res) => {
     data: null,
     error: 'Ошибка подбора событий, попробуйте позже'
   });
-  Promise.all(partiesFormatted).then(result => {
+  const filteredParties = partiesFormatted.filter(party => party.end_time > Date.now()); // this filter should be changed to SQL Request in /database
+  Promise.all(filteredParties).then(result => {
     res.json({
       data: result.reverse(),
       error: null
