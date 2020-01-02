@@ -42,7 +42,8 @@ export const parties = async (req, res) => {
       host: host
     };
   });
-  Promise.all(partiesFormatted).then(result => {
+  const filteredParties = partiesFormatted.filter(party => party.end_time > Date.now());
+  Promise.all(filteredParties).then(result => {
     res.json({
       data: result.reverse(),
       error: null
