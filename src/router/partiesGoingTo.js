@@ -4,7 +4,7 @@ const config = process.env;
 
 import jwt from 'jsonwebtoken';
 
-import { fetchPartiesGoingTo, guestList, guestListPending } from '../database';
+import { fetchPartiesGoingTo, guestList, guestListPending, userByID } from '../database';
 
 export const partiesGoingTo = async (req, res) => {
   const { user } = await jwt.verify(req.headers.access, config.SECRET);
