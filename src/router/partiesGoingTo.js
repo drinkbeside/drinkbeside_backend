@@ -12,13 +12,16 @@ export const partiesGoingTo = async (req, res) => {
   const parties = await fetchPartiesGoingTo(id);
   const partiesFormatted = await parties.map(async party => {
     const awaitedParty = await party;
+    const hostId = awaitedParty.host_id;
     const partyID = awaitedParty.id;
     const list = await guestList(partyID, id);
     const listPending = await guestListPending(partyID, id);
+    const host = await userByID(hostId);
     return {
       ...awaitedParty,
       guests: list ? list.length : 0,
-      pending_guests: listPending ? listPending.length : 0
+      pending_guests: listPending ? listPending.length : 0,
+      host: host
     };
   });
   if(!parties) return res.status(500).json({
